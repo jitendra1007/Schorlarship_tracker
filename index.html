@@ -2450,7 +2450,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             // INSTANT UI PRE-LOADER: Flip the button state before Google scripts load
-            if (localStorage.getItem('has_linked_google') === 'true') {
+            if (localStorage.getItem('scholarpath_has_linked_google') === 'true') {
                 const authBtn = document.getElementById('authBtn');
                 authBtn.textContent = 'Syncing...';
                 authBtn.className = 'btn-secondary btn-sm';
@@ -2756,9 +2756,9 @@
                     accessToken = resp.access_token;
                     gapi.client.setToken({ access_token: accessToken });
 
-                    localStorage.setItem('google_access_token', accessToken);
-                    localStorage.setItem('google_token_expiry', (Date.now() + (resp.expires_in * 1000)).toString());
-                    localStorage.setItem('has_linked_google', 'true');
+                    localStorage.setItem('scholarpath_google_access_token', accessToken);
+                    localStorage.setItem('scholarpath_google_token_expiry', (Date.now() + (resp.expires_in * 1000)).toString());
+                    localStorage.setItem('scholarpath_has_linked_google', 'true');
 
                     updateAuthUI(true);
                     setSyncStatus("Cloud Synced ✅", "active");
@@ -2774,9 +2774,9 @@
         function evaluateRoutingSession() {
             if (!gapiInited || !gisimInited) return;
 
-            if (localStorage.getItem('has_linked_google') === 'true') {
-                const cachedToken = localStorage.getItem('google_access_token');
-                const expiry = parseInt(localStorage.getItem('google_token_expiry') || '0');
+            if (localStorage.getItem('scholarpath_has_linked_google') === 'true') {
+                const cachedToken = localStorage.getItem('scholarpath_google_access_token');
+                const expiry = parseInt(localStorage.getItem('scholarpath_google_token_expiry') || '0');
 
                 if (cachedToken && Date.now() < expiry) {
                     // TOKEN IS VALID
@@ -2823,7 +2823,7 @@
         }
 
         function handleAuthFailure() {
-            localStorage.removeItem('google_access_token');
+            localStorage.removeItem('scholarpath_google_access_token');
             updateAuthUI(false);
         }
         
@@ -2842,16 +2842,16 @@
         }
 
         function handleAuthClick() {
-            if (localStorage.getItem('has_linked_google') === 'true') {
+            if (localStorage.getItem('scholarpath_has_linked_google') === 'true') {
                 // DISCONNECT LOGIC (Local Device Only)
                 accessToken = null;
                 isRefreshingToken = false;
                 needsManualReconnect = false;
 
                 // Wipe the browser memory for this specific device
-                localStorage.setItem('has_linked_google', 'false');
-                localStorage.removeItem('google_access_token');
-                localStorage.removeItem('google_token_expiry');
+                localStorage.setItem('scholarpath_has_linked_google', 'false');
+                localStorage.removeItem('scholarpath_google_access_token');
+                localStorage.removeItem('scholarpath_google_token_expiry');
 
                 // Update the UI to show disconnected state
                 updateAuthUI(false);
@@ -2918,14 +2918,14 @@
                 setSyncStatus("Sync Paused ⚠️", "error");
                 if (err.status === 401) {
                     // Force expiration flag and trigger a silent refresh instead of logging out
-                    localStorage.setItem('google_token_expiry', '0');
+                    localStorage.setItem('scholarpath_google_token_expiry', '0');
                     evaluateRoutingSession();
                 }
             }
         }
 
         async function autoUploadToCloud() {
-            if (localStorage.getItem('has_linked_google') !== 'true' || !accessToken) return;
+            if (localStorage.getItem('scholarpath_has_linked_google') !== 'true' || !accessToken) return;
             setSyncStatus("Saving to Cloud...", "active");
 
             try {
@@ -2962,7 +2962,7 @@
                 setSyncStatus("Sync Paused ⚠️", "error");
                 if (err.status === 401) {
                     // Force expiration flag and trigger a silent refresh instead of logging out
-                    localStorage.setItem('google_token_expiry', '0');
+                    localStorage.setItem('scholarpath_google_token_expiry', '0');
                     evaluateRoutingSession();
                 }
             }
@@ -2978,11 +2978,11 @@
 
         function handleMicroInteraction() {
             // Stop completely if the user is not logged in or the token is missing
-            if (localStorage.getItem('has_linked_google') !== 'true' || !accessToken) return;
+            if (localStorage.getItem('scholarpath_has_linked_google') !== 'true' || !accessToken) return;
             if (isRefreshingToken || needsManualReconnect) return;
 
             // NEW CODE: Check if the token expired while the laptop was asleep
-            const expiry = parseInt(localStorage.getItem('google_token_expiry') || '0');
+            const expiry = parseInt(localStorage.getItem('scholarpath_google_token_expiry') || '0');
             if (Date.now() >= expiry) {
                 evaluateRoutingSession(); // Trigger the silent refresh
                 return; // Stop the sync attempt so it doesn't crash
