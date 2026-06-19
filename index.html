@@ -1,0 +1,3892 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>ScholarPath | Premium Scholarship Tracker</title>
+    
+    <!-- Design Fonts & Icons (Google Hosted) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <!-- Google Identity Services & GAPI Clients -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+
+    <style>
+        /* Design System Core Tokens */
+        :root {
+            /* Palette mapped from Stitch metadata */
+            --primary: #3525cd;
+            --primary-container: #4f46e5;
+            --primary-fixed: #e2dfff;
+            --primary-fixed-dim: #c3c0ff;
+            --on-primary: #ffffff;
+            --on-primary-container: #dad7ff;
+            --on-primary-fixed: #0f0069;
+            --on-primary-fixed-variant: #3323cc;
+            
+            --secondary: #545f73;
+            --secondary-container: #d5e0f8;
+            --secondary-fixed: #d8e3fb;
+            --secondary-fixed-dim: #bcc7de;
+            --on-secondary: #ffffff;
+            --on-secondary-container: #586377;
+            --on-secondary-fixed: #111c2d;
+            --on-secondary-fixed-variant: #3c475a;
+
+            --tertiary: #434853;
+            --tertiary-container: #5b606b;
+            --tertiary-fixed: #dee2ef;
+            --tertiary-fixed-dim: #c2c6d3;
+            --on-tertiary: #ffffff;
+            --on-tertiary-container: #d7dbe8;
+            --on-tertiary-fixed: #171c25;
+            --on-tertiary-fixed-variant: #424751;
+
+            --surface: #faf8ff;
+            --surface-dim: #d2d9f4;
+            --surface-bright: #faf8ff;
+            --surface-container-lowest: #ffffff;
+            --surface-container-low: #f2f3ff;
+            --surface-container: #eaedff;
+            --surface-container-high: #e2e7ff;
+            --surface-container-highest: #dae2fd;
+            --on-surface: #131b2e;
+            --on-surface-variant: #464555;
+            --surface-variant: #dae2fd;
+            
+            --inverse-surface: #283044;
+            --inverse-on-surface: #eef0ff;
+            --inverse-primary: #c3c0ff;
+            
+            --outline: #777587;
+            --outline-variant: #c7c4d8;
+            --surface-tint: #4d44e3;
+
+            /* Semantic Status Colors */
+            --error: #ba1a1a;
+            --on-error: #ffffff;
+            --error-container: #ffdad6;
+            --on-error-container: #93000a;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --critical: #f43f5e;
+            --highlight: #fbbf24;
+
+            --slate-surface: #f8fafc;
+            --slate-border: #e2e8f0;
+
+            /* Typography & Shapes */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --radius-sm: 4px;
+            --radius-default: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-full: 9999px;
+
+            /* Spacing Constants */
+            --spacing-unit: 4px;
+            --gap-xs: 4px;
+            --gap-sm: 8px;
+            --gap-md: 16px;
+            --gap-lg: 24px;
+            --page-padding: 32px;
+        }
+
+        /* Dark Mode Override (Mapped from Design System Theme) */
+        html.dark {
+            --surface: #0e1118;
+            --surface-bright: #151a24;
+            --surface-container-lowest: #0b0d12;
+            --surface-container-low: #121620;
+            --surface-container: #1b202e;
+            --surface-container-high: #242b3d;
+            --surface-container-highest: #2e364c;
+            --on-surface: #f0f2f8;
+            --on-surface-variant: #b5b9c4;
+            --slate-surface: #0a0d13;
+            --slate-border: #242c3c;
+            --inverse-surface: #e2e8f0;
+            --inverse-on-surface: #0f172a;
+        }
+
+        /* Resets & Core Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+        }
+
+        body {
+            background-color: var(--slate-surface);
+            color: var(--on-surface);
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        button, input, select, textarea {
+            font-family: inherit;
+            color: inherit;
+        }
+
+        /* Layout Structure */
+        #sidebar {
+            width: 280px;
+            height: 100vh;
+            position: sticky;
+            left: 0;
+            top: 0;
+            background-color: var(--slate-surface);
+            border-right: 1px solid var(--slate-border);
+            display: flex;
+            flex-direction: column;
+            padding: var(--gap-md);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 90;
+        }
+
+        #sidebar.collapsed {
+            width: 88px;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            right: -14px;
+            top: 40px;
+            width: 28px;
+            height: 28px;
+            background: var(--surface-container-lowest);
+            border: 1px solid var(--slate-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 95;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            color: var(--on-surface);
+        }
+
+        .toggle-btn:hover {
+            background: var(--surface-container-low);
+            color: var(--primary);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: var(--gap-md);
+            padding: 12px 16px;
+            margin-bottom: 32px;
+            overflow: hidden;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .logo-icon:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-icon span {
+            color: var(--on-primary);
+            font-size: 24px;
+        }
+
+        .logo-details {
+            white-space: nowrap;
+            transition: opacity 0.2s;
+            opacity: 1;
+        }
+
+        .logo-details h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.3;
+        }
+
+        .logo-details p {
+            color: var(--on-surface-variant);
+            font-size: 11px;
+            font-weight: 400;
+        }
+
+        #sidebar.collapsed .logo-details,
+        #sidebar.collapsed .nav-text,
+        #sidebar.collapsed .profile-details {
+            display: none;
+            opacity: 0;
+            width: 0;
+        }
+
+        #sidebar.collapsed .logo-container,
+        #sidebar.collapsed .profile-container {
+            justify-content: center;
+            padding: 12px 0;
+        }
+
+        #sidebar.collapsed .profile-wrapper {
+            justify-content: center;
+            width: auto;
+        }
+
+        #sidebar.collapsed .nav-item {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        #sidebar.collapsed #sidebar-logo-main {
+            display: none !important;
+        }
+
+        #sidebar.collapsed #sidebar-hamburger {
+            margin: 0 auto;
+        }
+
+        /* Navigation List */
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .nav-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            border: none;
+            background: transparent;
+            color: var(--secondary);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+
+        .nav-item:hover {
+            background-color: var(--surface-container-highest);
+            color: var(--primary);
+        }
+
+        .nav-item:active {
+            transform: scale(0.97);
+        }
+
+        .nav-item.active-tab {
+            background-color: var(--primary) !important;
+            color: var(--on-primary) !important;
+            font-weight: 700;
+        }
+
+        .nav-item span {
+            flex-shrink: 0;
+        }
+
+        /* Profile Block */
+        .profile-container {
+            margin-top: auto;
+            padding: 16px;
+            background-color: var(--surface-container-low);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--slate-border);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-wrapper {
+            display: flex;
+            align-items: center;
+            gap: var(--gap-md);
+            width: 100%;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            border: 2px solid var(--primary);
+            background-color: var(--primary-container);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--on-primary);
+        }
+
+        .profile-details {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .profile-details p.name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--on-surface);
+        }
+
+        .profile-details p.role {
+            color: var(--on-surface-variant);
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Main Window */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header Area */
+        header {
+            width: 100%;
+            height: 64px;
+            background-color: rgba(250, 248, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--slate-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 var(--page-padding);
+            flex-shrink: 0;
+            z-index: 40;
+        }
+
+        .mobile-header-bar {
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            padding: 6px;
+            cursor: pointer;
+            color: var(--on-surface);
+        }
+
+        .add-btn {
+            background-color: var(--primary);
+            color: var(--on-primary);
+            font-weight: 700;
+            padding: 10px 24px;
+            border-radius: var(--radius-md);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(53, 37, 205, 0.15);
+            transition: all 0.2s ease;
+        }
+
+        .add-btn:hover {
+            background-color: var(--primary-container);
+            box-shadow: 0 4px 12px rgba(53, 37, 205, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .add-btn:active {
+            transform: translateY(1px);
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 440px;
+            margin: 0 32px;
+            position: relative;
+            transition: opacity 0.3s;
+        }
+
+        .search-container span.search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--on-surface-variant);
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .search-input {
+            width: 100%;
+            background-color: var(--surface-container-low);
+            border: 1px solid var(--slate-border);
+            border-radius: var(--radius-full);
+            padding: 10px 20px 10px 48px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            background-color: var(--surface-container-lowest);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(53, 37, 205, 0.08);
+        }
+
+        .search-input:focus + span.search-icon {
+            color: var(--primary);
+        }
+
+        /* Workspace Grid and Scrolling Content */
+        #content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--page-padding);
+            background-color: var(--slate-surface);
+        }
+
+        .tab-pane {
+            display: none;
+            height: 100%;
+        }
+
+        .tab-pane.active-pane {
+            display: flex;
+        }
+
+        #tab-tracker {
+            flex-direction: column;
+            gap: var(--gap-lg);
+        }
+
+        @media (min-width: 1025px) {
+            #tab-tracker {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+        }
+
+        .tracker-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-lg);
+        }
+
+        /* Bento Grid & Cards */
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--slate-border);
+            border-radius: var(--radius-lg);
+            padding: var(--gap-md);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html.dark .glass-card {
+            background-color: rgba(27, 32, 46, 0.85);
+        }
+
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--gap-lg);
+        }
+
+        .metric-card {
+            border-left: 4px solid var(--primary);
+        }
+        .metric-card.info-blue { border-left-color: var(--info); background-color: rgba(59, 130, 246, 0.03); }
+        .metric-card.success-emerald { border-left-color: var(--success); background-color: rgba(16, 185, 129, 0.03); }
+        .metric-card.warning-amber { border-left-color: var(--warning); background-color: rgba(245, 158, 10, 0.03); }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .metric-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--secondary);
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--on-surface);
+            line-height: 1.2;
+        }
+
+        .metric-icon {
+            font-size: 20px;
+        }
+        .metric-card.info-blue .metric-icon { color: var(--info); }
+        .metric-card.success-emerald .metric-icon { color: var(--success); }
+        .metric-card.warning-amber .metric-icon { color: var(--warning); }
+
+        /* Progress Card */
+        .progress-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .progress-title-block h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--on-surface);
+        }
+
+        .progress-title-block p {
+            font-size: 12px;
+            color: var(--on-surface-variant);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .progress-title-block p span {
+            font-size: 14px;
+            color: var(--primary);
+        }
+
+        .progress-percentage {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background-color: var(--surface-container-highest);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: var(--radius-full);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+        }
+
+        .progress-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .progress-footer-cell {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .progress-footer-label {
+            font-size: 9px;
+            font-weight: 800;
+            color: var(--on-surface-variant);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .progress-footer-value {
+            font-weight: 700;
+            color: var(--on-surface);
+            font-size: 13px;
+        }
+
+        /* Filter Row & Bento Grid */
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--gap-md);
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--gap-sm);
+        }
+
+        .select-filter {
+            background-color: var(--surface-container-lowest);
+            border: 1px solid var(--slate-border);
+            border-radius: var(--radius-default);
+            font-size: 12px;
+            padding: 8px 32px 8px 12px;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23475569'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 18px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            transition: all 0.2s;
+        }
+
+        .select-filter:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(53,37,205,0.08);
+        }
+
+        .results-count {
+            font-size: 12px;
+            color: var(--on-surface-variant);
+            font-weight: 600;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: var(--gap-lg);
+        }
+
+        /* Scholarship Cards */
+        .scholarship-card {
+            background-color: var(--surface-container-lowest);
+            border: 1px solid var(--slate-border);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .scholarship-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+            border-color: var(--primary-fixed-dim);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .card-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow: hidden;
+        }
+
+        .card-title-group h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-title-group p.type {
+            font-size: 12px;
+            font-style: italic;
+            color: var(--on-surface-variant);
+        }
+
+        .badge {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            white-space: nowrap;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-priority-high { background-color: var(--primary-fixed); color: var(--on-primary-fixed-variant); }
+        .badge-priority-medium { background-color: var(--secondary-fixed); color: var(--on-secondary-fixed-variant); }
+        .badge-priority-low { background-color: var(--tertiary-fixed); color: var(--on-tertiary-fixed-variant); }
+
+        .card-amount-block {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--on-surface);
+        }
+
+        .card-amount-block span {
+            color: var(--success);
+        }
+
+        .card-deadline-block {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--on-surface-variant);
+            font-size: 12px;
+        }
+
+        .card-deadline-block span {
+            font-size: 16px;
+        }
+
+        .card-body-divider {
+            border-top: 1px dashed var(--slate-border);
+            padding-top: 16px;
+        }
+
+        .card-eligibility {
+            font-size: 12px;
+            color: var(--on-surface-variant);
+            font-weight: 400;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.5;
+            height: 36px;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            border-top: 1px solid var(--slate-border);
+            padding-top: 12px;
+        }
+
+        .badge-status {
+            padding: 4px 10px;
+            border-radius: var(--radius-default);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 1px solid transparent;
+        }
+
+        .status-inprogress { background-color: rgba(245, 158, 11, 0.08); color: var(--warning); border-color: rgba(245, 158, 11, 0.15); }
+        .status-submitted { background-color: rgba(16, 185, 129, 0.08); color: var(--success); border-color: rgba(16, 185, 129, 0.15); }
+        .status-notstarted { background-color: rgba(84, 95, 115, 0.08); color: var(--secondary); border-color: rgba(84, 95, 115, 0.15); }
+        .status-awarded { background-color: rgba(53, 37, 205, 0.08); color: var(--primary); border-color: rgba(53, 37, 205, 0.15); }
+        .status-rejected { background-color: rgba(186, 26, 26, 0.08); color: var(--error); border-color: rgba(186, 26, 26, 0.15); }
+
+        .card-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-default);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--on-surface-variant);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            background-color: var(--surface-container);
+            color: var(--primary);
+        }
+
+        .icon-btn.delete-btn-card:hover {
+            background-color: rgba(244, 63, 94, 0.08);
+            color: var(--critical);
+        }
+
+        /* Tracker Right Column Calendar Panel */
+        .tracker-aside {
+            width: 100%;
+            background-color: var(--surface-container-lowest);
+            border: 1px solid var(--slate-border);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        @media (min-width: 1025px) {
+            .tracker-aside {
+                width: 320px;
+                flex-shrink: 0;
+            }
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .panel-header h3 {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--on-surface-variant);
+        }
+
+        .calendar-nav-arrows {
+            display: flex;
+            gap: 4px;
+        }
+
+        .mini-arrow-btn {
+            background: transparent;
+            border: none;
+            padding: 2px;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            color: var(--on-surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mini-arrow-btn:hover {
+            background-color: var(--slate-surface);
+            color: var(--primary);
+        }
+
+        .mini-cal-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--outline);
+            margin-bottom: 8px;
+        }
+
+        .mini-cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .mini-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: var(--radius-default);
+            color: var(--secondary);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .mini-day:hover {
+            background-color: var(--primary-fixed);
+            color: var(--on-primary-fixed-variant);
+        }
+
+        .mini-day.other {
+            color: var(--outline-variant);
+            opacity: 0.3;
+        }
+
+        .mini-day.today {
+            color: var(--primary);
+            border: 1px solid var(--primary-fixed-dim);
+            font-weight: 800;
+        }
+
+        .mini-day.selected {
+            background-color: var(--primary) !important;
+            color: var(--on-primary) !important;
+            font-weight: 700;
+        }
+
+        .mini-day .dot {
+            position: absolute;
+            bottom: 3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+        }
+
+        .dot-deadline { background-color: var(--warning); }
+        .dot-result { background-color: var(--success); }
+
+        .due-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .due-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--slate-border);
+            padding-bottom: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--outline);
+            letter-spacing: 0.05em;
+        }
+
+        .due-count-badge {
+            background-color: var(--surface-container);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .due-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .due-item {
+            padding: 16px;
+            background-color: var(--surface-container-low);
+            border: 1px solid var(--slate-border);
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .due-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+            border-color: var(--primary-fixed-dim);
+            transform: translateX(2px);
+        }
+
+        .due-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .due-item-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--on-surface);
+        }
+
+        /* Calendar Page Tab */
+        #tab-calendar {
+            flex-direction: column;
+            gap: var(--gap-lg);
+            background-color: var(--surface-container-lowest);
+            border: 1px solid var(--slate-border);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            display: none;
+            width: 100%;
+        }
+
+        #tab-calendar.active-pane {
+            display: flex;
+        }
+
+        .calendar-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid var(--slate-border);
+            background-color: var(--surface-container-lowest);
+            gap: 16px;
+        }
+
+        .calendar-header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--gap-lg);
+        }
+
+        .calendar-header-left h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .week-start-toggle {
+            display: flex;
+            background-color: var(--slate-surface);
+            padding: 4px;
+            border-radius: var(--radius-default);
+            border: 1px solid var(--slate-border);
+        }
+
+        .toggle-tab-btn {
+            border: none;
+            background: transparent;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            color: var(--secondary);
+            transition: all 0.2s;
+        }
+
+        .toggle-tab-btn.active {
+            background-color: var(--surface-container-lowest);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            color: var(--primary);
+        }
+
+        .calendar-legend {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--on-surface-variant);
+            letter-spacing: 0.05em;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.deadline { background-color: var(--warning); }
+        .legend-dot.result { background-color: var(--success); }
+
+        .cal-nav-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .cal-arrow-btn {
+            background: transparent;
+            border: 1px solid var(--slate-border);
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-default);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--on-surface);
+        }
+
+        .cal-arrow-btn:hover {
+            background-color: var(--slate-surface);
+            border-color: var(--primary-fixed-dim);
+            color: var(--primary);
+        }
+
+        .calendar-scroll-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .calendar-weekdays-row {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(140px, 1fr));
+            gap: 1px;
+            border-bottom: 1px solid var(--slate-border);
+            background-color: var(--slate-surface);
+        }
+
+        .calendar-weekday {
+            padding: 12px;
+            text-align: center;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--outline);
+            letter-spacing: 0.1em;
+            border-right: 1px solid var(--slate-border);
+        }
+
+        .calendar-weekday:last-child {
+            border-right: none;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(140px, 1fr));
+            flex: 1;
+            background-color: var(--slate-border);
+            gap: 1px;
+            overflow-y: auto;
+        }
+
+        .calendar-cell {
+            background-color: var(--surface-container-lowest);
+            min-height: 110px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .calendar-cell:hover {
+            background-color: var(--surface-container-low);
+        }
+
+        .calendar-cell.other-month {
+            background-color: var(--surface-container-lowest);
+            color: var(--on-surface-variant);
+            opacity: 1;
+        }
+
+        .calendar-cell.other-month .calendar-cell-day-num {
+            color: var(--outline-variant) !important;
+        }
+
+        .calendar-cell-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--on-surface-variant);
+        }
+
+        .calendar-cell.today-cell .calendar-cell-day-num {
+            background-color: var(--primary);
+            color: var(--on-primary);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .calendar-events-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .calendar-event {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 6px;
+            border-radius: var(--radius-sm);
+            font-size: 9px;
+            font-weight: 700;
+            border: 1px solid transparent;
+            text-align: left;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .calendar-event.event-deadline {
+            background-color: rgba(245, 158, 11, 0.08);
+            border-color: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .calendar-event.event-result {
+            background-color: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .calendar-event span {
+            font-size: 12px;
+        }
+
+        .calendar-event span:last-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+
+        /* Setup / Settings Tab */
+        #tab-setup {
+            max-width: 900px;
+            margin: 0 auto;
+            display: none;
+            flex-direction: column;
+            gap: var(--gap-lg);
+            width: 100%;
+        }
+
+        #tab-setup.active-pane {
+            display: flex;
+        }
+
+        .setup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--gap-lg);
+        }
+
+        .setup-card {
+            background-color: var(--surface-container-lowest);
+            border: 1px solid var(--slate-border);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.01);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .setup-header-block {
+            display: flex;
+            align-items: center;
+            gap: var(--gap-md);
+        }
+
+        .setup-icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .setup-icon-box.general { background-color: var(--primary-fixed); color: var(--primary); }
+        .setup-icon-box.status { background-color: var(--secondary-container); color: var(--secondary); }
+
+        .setup-header-text h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--on-surface);
+        }
+
+        .setup-header-text p {
+            font-size: 12px;
+            color: var(--on-surface-variant);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--on-surface);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--slate-border);
+            border-radius: var(--radius-md);
+            background-color: var(--surface-container-lowest);
+            outline: none;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(53,37,205,0.08);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .form-row .form-group:first-child {
+            width: 80px;
+        }
+        .form-row .form-group:last-child {
+            flex: 1;
+        }
+
+        .setup-tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .setup-tag {
+            padding: 6px 12px;
+            background-color: var(--slate-surface);
+            border: 1px solid var(--slate-border);
+            border-radius: var(--radius-full);
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .setup-tag button {
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--outline);
+        }
+
+        .setup-tag button:hover {
+            color: var(--critical);
+        }
+
+        .add-tag-btn {
+            padding: 6px 16px;
+            border: 1px dashed var(--primary);
+            background: transparent;
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-tag-btn:hover {
+            background-color: rgba(53, 37, 205, 0.05);
+        }
+
+        .data-management-card {
+            background-color: var(--surface-container-lowest);
+            border: 1px solid var(--slate-border);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-md);
+        }
+
+        .data-management-card h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--on-surface);
+        }
+
+        .data-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .action-outline-btn {
+            width: 100%;
+            padding: 12px 24px;
+            border: 1px solid var(--slate-border);
+            border-radius: var(--radius-md);
+            background: transparent;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .action-outline-btn:hover {
+            background-color: var(--slate-surface);
+            border-color: var(--outline-variant);
+        }
+
+        .action-outline-btn.danger-btn {
+            border-color: rgba(244, 63, 94, 0.2);
+            color: var(--critical);
+        }
+
+        .action-outline-btn.danger-btn:hover {
+            background-color: rgba(244, 63, 94, 0.05);
+            border-color: var(--critical);
+        }
+
+        /* Modal Structure */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-container {
+            background-color: var(--surface-container-lowest);
+            border: 1px solid var(--slate-border);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 580px;
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--slate-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--surface-container-lowest);
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .close-modal-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: var(--radius-full);
+            color: var(--outline);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .close-modal-btn:hover {
+            background-color: var(--slate-surface);
+            color: var(--on-surface);
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal-form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: var(--gap-md);
+        }
+
+        .modal-cancel-btn {
+            flex: 1;
+            padding: 14px;
+            font-weight: 700;
+            border: 1px solid var(--slate-border);
+            border-radius: var(--radius-md);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-cancel-btn:hover {
+            background-color: var(--slate-surface);
+        }
+
+        .modal-save-btn {
+            flex: 1;
+            padding: 14px;
+            font-weight: 700;
+            border: none;
+            border-radius: var(--radius-md);
+            background-color: var(--primary);
+            color: var(--on-primary);
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(53,37,205,0.15);
+            transition: all 0.2s;
+        }
+
+        .modal-save-btn:hover {
+            background-color: var(--primary-container);
+            box-shadow: 0 6px 12px rgba(53,37,205,0.25);
+        }
+
+        /* Toast Component */
+        #toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translate(-50%, 16px);
+            background-color: var(--inverse-surface);
+            color: var(--inverse-on-surface);
+            padding: 12px 24px;
+            border-radius: var(--radius-full);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 300;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+        }
+
+        #toast.active {
+            opacity: 1;
+            transform: translate(-50%, 0);
+            pointer-events: auto;
+        }
+
+        #toast span.success-icon {
+            color: var(--success);
+        }
+
+        #toast span.error-icon {
+            color: var(--critical);
+        }
+
+        /* Sidebar Overlay Backdrop for Mobile drawer */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            z-index: 85;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--outline-variant);
+            border-radius: var(--radius-full);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--outline);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            #sidebar {
+                position: fixed;
+                left: -280px;
+                box-shadow: 4px 0 24px rgba(15, 23, 42, 0.15);
+            }
+
+            #sidebar.mobile-active {
+                left: 0;
+            }
+
+            .sidebar-backdrop.active {
+                display: block;
+            }
+
+            .mobile-header-bar {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .search-container {
+                margin: 0 16px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .tab-pane {
+                height: auto !important;
+            }
+
+            header {
+                padding: 0 16px;
+                gap: 8px;
+            }
+
+            .search-container {
+                display: none; /* Hide main search bar on mobile header */
+            }
+
+            .mobile-search-row {
+                display: block !important;
+                margin-bottom: var(--gap-md);
+            }
+
+            .metrics-row {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            /* Mobile Mini-Calendar Spacing & Sizing fixes */
+            .tracker-aside {
+                padding: 16px !important;
+            }
+            .mini-cal-grid, .mini-cal-weekdays {
+                gap: 2px !important;
+            }
+            .mini-day {
+                font-size: 10px !important;
+            }
+            .due-list {
+                max-height: none !important; /* Remove heights so list stretches out fully */
+                overflow-y: visible !important;
+            }
+
+            /* Disable collapsed/minimized sidebar icons view on mobile */
+            #sidebar {
+                position: fixed !important;
+                left: -280px !important;
+                width: 280px !important;
+                height: 100vh !important;
+                z-index: 100 !important;
+                display: flex !important;
+            }
+            #sidebar.mobile-active {
+                left: 0 !important;
+            }
+            #sidebar.collapsed {
+                width: 280px !important;
+            }
+            #sidebar.collapsed .logo-details,
+            #sidebar.collapsed .nav-text,
+            #sidebar.collapsed .profile-details {
+                display: block !important;
+                opacity: 1 !important;
+                width: auto !important;
+            }
+            #sidebar.collapsed .logo-container,
+            #sidebar.collapsed .profile-container {
+                justify-content: space-between !important;
+                padding: 12px 16px !important;
+            }
+            #sidebar.collapsed .profile-wrapper {
+                justify-content: flex-start !important;
+                width: 100% !important;
+            }
+            #sidebar.collapsed .nav-item {
+                justify-content: flex-start !important;
+                padding: 14px 16px !important;
+            }
+            #sidebar.collapsed #sidebar-logo-main {
+                display: flex !important;
+            }
+
+            /* Mobile Large Calendar cut-off scrolling fixes */
+            #tab-calendar {
+                height: auto !important;
+                overflow: visible !important;
+            }
+            .calendar-scroll-container {
+                overflow-x: auto !important;
+                overflow-y: visible !important;
+                -webkit-overflow-scrolling: touch;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                height: auto !important;
+                flex: none !important;
+            }
+            .calendar-grid {
+                overflow-y: visible !important;
+                height: auto !important;
+                flex: none !important;
+            }
+            .calendar-cell {
+                min-height: 90px !important; /* Slightly more compact on mobile */
+            }
+            .calendar-event {
+                padding: 2px 4px !important;
+                font-size: 8px !important;
+            }
+        }
+
+        .mobile-search-row {
+            display: none;
+            width: 100%;
+            position: relative;
+        }
+
+        /* Print Style Sheet Rules */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                font-size: 11pt !important;
+                overflow: visible !important;
+            }
+            #sidebar, .toggle-btn, header, .sidebar-backdrop, .modal-overlay, #toast, .tracker-aside, .controls-row, .mobile-search-row, .p-4.bg-white, .setup-card, .data-management-card, .active-pane:not(#tab-tracker) {
+                display: none !important;
+            }
+            main {
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
+                position: static !important;
+            }
+            #content-area {
+                padding: 0 !important;
+                overflow: visible !important;
+                height: auto !important;
+            }
+            #tab-tracker {
+                display: block !important;
+            }
+            .tracker-main {
+                width: 100% !important;
+                gap: 20px !important;
+            }
+            .glass-card {
+                background: white !important;
+                border: 1px solid #ccc !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+            }
+            .bento-grid {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px !important;
+            }
+            .scholarship-card {
+                background: white !important;
+                border: 1px solid #999 !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+            }
+            .card-actions, .card-actions-divider {
+                display: none !important;
+            }
+        }
+
+        /* Serverless Architecture Integration Styles */
+        #authBtn {
+            font-weight: 700;
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--slate-border);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        #authBtn.btn-primary {
+            background-color: var(--primary);
+            color: var(--on-primary);
+            border: none;
+            box-shadow: 0 2px 4px rgba(53, 37, 205, 0.15);
+        }
+        #authBtn.btn-primary:hover {
+            background-color: var(--primary-container);
+        }
+        #authBtn.btn-secondary {
+            background-color: var(--surface-container-lowest);
+            color: var(--on-surface);
+        }
+        #authBtn.btn-secondary:hover {
+            background-color: var(--surface-container-low);
+        }
+        #authBtn.btn-danger-text {
+            color: var(--error) !important;
+            border-color: rgba(186, 26, 26, 0.2);
+        }
+        #authBtn.btn-danger-text:hover {
+            background-color: var(--error-container);
+        }
+        
+        .sync-status {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: var(--radius-full);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--surface-container-low);
+            border: 1px solid var(--slate-border);
+            color: var(--on-surface-variant);
+            transition: all 0.2s;
+        }
+        .sync-status.active {
+            background-color: var(--primary-fixed);
+            color: var(--primary);
+            border-color: var(--primary-fixed-dim);
+        }
+        .sync-status.error {
+            background-color: var(--error-container);
+            color: var(--error);
+            border-color: var(--outline);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Responsive Backdrop -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeMobileSidebar()"></div>
+
+    <!-- Collapsible Sidebar -->
+    <aside id="sidebar">
+        <div class="logo-container" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <div class="logo-main" id="sidebar-logo-main" style="display: flex; align-items: center; gap: var(--gap-md);">
+                <div class="logo-icon" id="sidebar-logo-icon">
+                    <span class="material-symbols-outlined">school</span>
+                </div>
+                <div class="logo-details">
+                    <h1>ScholarPath</h1>
+                    <p>Scholarship Tracker</p>
+                </div>
+            </div>
+            <button class="icon-btn" id="sidebar-hamburger" onclick="toggleSidebar()" title="Toggle sidebar" style="display: flex; align-items: center; justify-content: center; background: transparent; border: none; cursor: pointer; color: var(--on-surface); padding: 6px; border-radius: var(--radius-default);">
+                <span class="material-symbols-outlined" style="font-size: 20px;">menu</span>
+            </button>
+        </div>
+
+        <nav>
+            <button class="nav-item active-tab" data-tab="tracker" onclick="switchTab('tracker')">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="nav-text">Tracker</span>
+            </button>
+            <button class="nav-item" data-tab="calendar" onclick="switchTab('calendar')">
+                <span class="material-symbols-outlined">calendar_month</span>
+                <span class="nav-text">Calendar</span>
+            </button>
+            <button class="nav-item" data-tab="setup" onclick="switchTab('setup')">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="nav-text">Setup</span>
+            </button>
+        </nav>
+
+        <div class="profile-container">
+            <div class="profile-wrapper">
+                <div class="avatar">
+                    <span class="material-symbols-outlined">person</span>
+                </div>
+                <div class="profile-details">
+                    <p class="name" id="display-user-name">Alex Chen</p>
+                    <p class="role">Student</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Content Workspace -->
+    <main>
+        <header>
+            <div class="mobile-header-bar">
+                <button class="mobile-menu-btn" onclick="openMobileSidebar()">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <div class="logo-icon" style="width: 32px; height: 32px;">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">school</span>
+                </div>
+            </div>
+
+            <div class="search-container" id="header-search-container">
+                <input class="search-input" id="searchBar" oninput="handleSearch(this.value)" placeholder="Search scholarships..." type="text">
+                <span class="material-symbols-outlined search-icon">search</span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div id="syncStatusIndicator" class="sync-status" style="display: none;"></div>
+                <button id="authBtn" class="btn-primary" onclick="handleAuthClick()">Connect Drive</button>
+                <button class="icon-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle color mode" style="width: 40px; height: 40px; border-radius: var(--radius-md); border: 1px solid var(--slate-border); background: var(--surface-container-lowest); display: flex; align-items: center; justify-content: center;">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">dark_mode</span>
+                </button>
+                <button class="add-btn" onclick="openScholarshipModal('add')">
+                    <span class="material-symbols-outlined">add</span>
+                    Add Scholarship
+                </button>
+            </div>
+        </header>
+
+        <div id="content-area">
+            
+            <!-- Mobile Search Row -->
+            <div class="mobile-search-row" id="mobile-search-container">
+                <input class="search-input" id="mobileSearchBar" oninput="handleSearch(this.value)" placeholder="Search scholarships..." type="text" style="padding-left: 44px;">
+                <span class="material-symbols-outlined search-icon" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--on-surface-variant);">search</span>
+            </div>
+
+            <!-- Tab 1: Tracker -->
+            <div class="tab-pane active-pane" id="tab-tracker">
+                <div class="tracker-main">
+                    
+                    <!-- Metrics Summary Grid -->
+                    <div class="metrics-row">
+                        <div class="glass-card metric-card info-blue">
+                            <div class="metric-header">
+                                <span class="metric-title">Total Potential Funding</span>
+                                <span class="material-symbols-outlined metric-icon">monetization_on</span>
+                            </div>
+                            <h2 class="metric-value" id="stat-total-amount">$0</h2>
+                        </div>
+                        <div class="glass-card metric-card success-emerald">
+                            <div class="metric-header">
+                                <span class="metric-title">Scholarships Submitted</span>
+                                <span class="material-symbols-outlined metric-icon">check_circle</span>
+                            </div>
+                            <h2 class="metric-value" id="stat-submitted-count">0</h2>
+                        </div>
+                        <div class="glass-card metric-card warning-amber">
+                            <div class="metric-header">
+                                <span class="metric-title">Upcoming Deadlines</span>
+                                <span class="material-symbols-outlined metric-icon">event_upcoming</span>
+                            </div>
+                            <h2 class="metric-value" id="stat-deadlines-count">0</h2>
+                        </div>
+                    </div>
+
+                    <!-- Progress Card -->
+                    <div class="glass-card progress-card">
+                        <div class="progress-header">
+                            <div class="progress-title-block">
+                                <h3>Funding Goal Progress</h3>
+                                <p>
+                                    <span class="material-symbols-outlined">track_changes</span>
+                                    Track your path to full coverage
+                                </p>
+                            </div>
+                            <div class="progress-percentage" id="goal-percentage">0%</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="goal-progress-bar"></div>
+                        </div>
+                        <div class="progress-footer">
+                            <div class="progress-footer-cell">
+                                <span class="progress-footer-label">Current Secured</span>
+                                <span class="progress-footer-value" id="current-secured-val">$0</span>
+                            </div>
+                            <div class="progress-footer-cell" style="text-align: right;">
+                                <span class="progress-footer-label">Total Goal</span>
+                                <span class="progress-footer-value" id="display-funding-goal">$0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filters Control Row -->
+                    <div class="controls-row">
+                        <div class="filter-group">
+                            <select class="select-filter" id="filter-status" onchange="handleFilterChange()">
+                                <option>All Statuses</option>
+                                <option>Not Started</option>
+                                <option>In Progress</option>
+                                <option>Submitted</option>
+                                <option>Awarded</option>
+                                <option>Rejected</option>
+                            </select>
+                            <select class="select-filter" id="filter-priority" onchange="handleFilterChange()">
+                                <option>All Priorities</option>
+                                <option>High</option>
+                                <option>Medium</option>
+                                <option>Low</option>
+                            </select>
+                            <select class="select-filter" id="filter-decision" onchange="handleFilterChange()">
+                                <option>Decision: All</option>
+                                <option>Pending</option>
+                                <option>Finalist</option>
+                                <option>Awarded</option>
+                                <option>Denied</option>
+                            </select>
+                        </div>
+                        <div class="results-count">
+                            <span id="result-count">0</span> Scholarships found
+                        </div>
+                    </div>
+
+                    <!-- Bento Grid for Scholarships -->
+                    <div class="bento-grid" id="scholarship-grid">
+                        <!-- Cards are dynamically rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Right Column: Sidebar Mini Calendar and upcoming list -->
+                <aside class="tracker-aside">
+                    
+                    <!-- Sidebar Mini Calendar -->
+                    <div>
+                        <div class="panel-header">
+                            <h3 id="mini-cal-month-title">October 2026</h3>
+                            <div class="calendar-nav-arrows">
+                                <button class="mini-arrow-btn" onclick="navigateMiniCalendar(-1)">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span>
+                                </button>
+                                <button class="mini-arrow-btn" onclick="navigateMiniCalendar(1)">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mini-cal-weekdays" id="mini-cal-weekdays">
+                            <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                        </div>
+                        <div class="mini-cal-grid" id="mini-calendar-grid">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Upcoming / selected day deadlines -->
+                    <div class="due-section">
+                        <div class="due-header">
+                            <span id="deadlines-header">Select Date</span>
+                            <span class="due-count-badge" id="daily-deadline-count">0</span>
+                        </div>
+                        <div class="due-list" id="daily-results-list">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Tab 2: Calendar Page -->
+            <div class="tab-pane" id="tab-calendar">
+                <div class="calendar-header">
+                    <div class="calendar-header-left">
+                        <h2 id="calendar-month-title">October 2026</h2>
+                        <div class="week-start-toggle">
+                            <button class="toggle-tab-btn active" id="toggle-sun-start" onclick="setCalendarWeekStart(0)">Sun Start</button>
+                            <button class="toggle-tab-btn" id="toggle-mon-start" onclick="setCalendarWeekStart(1)">Mon Start</button>
+                        </div>
+                    </div>
+
+                    <div class="calendar-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot deadline"></span>
+                            <span>Deadline</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot result"></span>
+                            <span>Result Date</span>
+                        </div>
+                        <div class="cal-nav-group">
+                            <button class="cal-arrow-btn" onclick="navigateLargeCalendar(-1)">
+                                <span class="material-symbols-outlined">chevron_left</span>
+                            </button>
+                            <button class="cal-arrow-btn" onclick="navigateLargeCalendar(1)">
+                                <span class="material-symbols-outlined">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="calendar-scroll-container">
+                    <div class="calendar-weekdays-row" id="large-cal-weekdays">
+                        <!-- Populated dynamically based on start day -->
+                    </div>
+
+                    <div class="calendar-grid" id="large-calendar-grid">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Setup Preferences -->
+            <div class="tab-pane" id="tab-setup">
+                <div class="setup-grid">
+                    
+                    <!-- Profile Info Setup -->
+                    <div class="setup-card">
+                        <div class="setup-header-block">
+                            <div class="setup-icon-box general">
+                                <span class="material-symbols-outlined">person</span>
+                            </div>
+                            <div class="setup-header-text">
+                                <h2>General Profile</h2>
+                                <p>Your identity and tracking goal.</p>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="user-name-input">Profile Name</label>
+                            <input class="form-input" id="user-name-input" oninput="handleProfileUpdate()" placeholder="e.g. Alex Chen" type="text">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="currency-input">Currency</label>
+                                <input class="form-input" id="currency-input" oninput="handleProfileUpdate()" placeholder="$" type="text" style="text-align: center;">
+                            </div>
+                            <div class="form-group">
+                                <label for="funding-goal-input">Funding Goal</label>
+                                <div style="position: relative; display: flex; align-items: center;">
+                                    <span id="goal-currency-symbol" style="position: absolute; left: 16px; font-weight: 700; color: var(--on-surface-variant);">$</span>
+                                    <input class="form-input" id="funding-goal-input" oninput="handleProfileUpdate()" placeholder="e.g. 145000" type="number" style="padding-left: 32px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Type Config Card -->
+                    <div class="setup-card">
+                        <div class="setup-header-block">
+                            <div class="setup-icon-box status">
+                                <span class="material-symbols-outlined">category</span>
+                            </div>
+                            <div class="setup-header-text">
+                                <h2>Status Configuration</h2>
+                                <p>Customize classification labels.</p>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Scholarship Types</label>
+                            <div class="setup-tag-list" id="setup-tags-container">
+                                <!-- Populated dynamically by JS -->
+                            </div>
+                            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                                <input class="form-input" id="new-tag-input" placeholder="New Type..." type="text" style="padding: 6px 12px; font-size: 12px;">
+                                <button class="add-btn" onclick="addNewType()" style="padding: 6px 16px; font-size: 12px; border-radius: var(--radius-md);">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup & Restoration Data Management Card -->
+                <div class="data-management-card">
+                    <h3>Data Management</h3>
+                    <div class="data-buttons">
+                        <button class="action-outline-btn" onclick="exportData()">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
+                            Export Data
+                        </button>
+                        
+                        <!-- Hidden input for file selection -->
+                        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+                        
+                        <button class="action-outline-btn" onclick="triggerImport()">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">upload</span>
+                            Import Data
+                        </button>
+                        
+                        <button class="action-outline-btn danger-btn" onclick="clearAllData()">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">delete_forever</span>
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Dynamic Modal: Add/Edit Scholarship Form -->
+    <div class="modal-overlay" id="scholarship-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="modal-title">
+                    <span class="material-symbols-outlined" id="modal-icon">add_circle</span>
+                    <span id="modal-title-text">Add Scholarship</span>
+                </h2>
+                <button class="close-modal-btn" onclick="closeScholarshipModal()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form class="modal-form" id="scholarship-form" onsubmit="handleFormSubmit(event)">
+                    <input type="hidden" id="form-scholarship-id">
+
+                    <div class="form-group">
+                        <label for="form-name">Scholarship Name *</label>
+                        <input class="form-input" id="form-name" placeholder="e.g. Global Tech Excellence" required type="text">
+                    </div>
+
+                    <div class="modal-form-grid-2">
+                        <div class="form-group">
+                            <label for="form-amount">Amount ($) *</label>
+                            <input class="form-input" id="form-amount" placeholder="e.g. 25000" required type="number" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="form-type">Scholarship Type</label>
+                            <select class="form-input" id="form-type" style="padding-top: 10px; padding-bottom: 10px;">
+                                <!-- Types filled dynamically -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-form-grid-2">
+                        <div class="form-group">
+                            <label for="form-deadline">Deadline *</label>
+                            <input class="form-input" id="form-deadline" required type="date">
+                        </div>
+                        <div class="form-group">
+                            <label for="form-status">Status</label>
+                            <select class="form-input" id="form-status" style="padding-top: 10px; padding-bottom: 10px;">
+                                <option value="Not Started">Not Started</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Submitted">Submitted</option>
+                                <option value="Awarded">Awarded</option>
+                                <option value="Rejected">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-form-grid-2">
+                        <div class="form-group">
+                            <label for="form-priority">Priority</label>
+                            <select class="form-input" id="form-priority" style="padding-top: 10px; padding-bottom: 10px;">
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="form-website">Website Link</label>
+                            <input class="form-input" id="form-website" placeholder="https://example.com" type="url">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="form-eligibility">Eligibility Criteria</label>
+                        <textarea class="form-input" id="form-eligibility" placeholder="Who can apply? Requirements, GPA benchmarks..." style="min-height: 70px; resize: vertical;"></textarea>
+                    </div>
+
+                    <div class="modal-form-grid-2">
+                        <div class="form-group">
+                            <label for="form-result-date">Result Date</label>
+                            <input class="form-input" id="form-result-date" type="date">
+                        </div>
+                        <div class="form-group">
+                            <label for="form-decision">Decision</label>
+                            <select class="form-input" id="form-decision" style="padding-top: 10px; padding-bottom: 10px;">
+                                <option value="Pending">Pending</option>
+                                <option value="Finalist">Finalist</option>
+                                <option value="Awarded">Awarded</option>
+                                <option value="Denied">Denied</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="form-notes">Notes</label>
+                        <textarea class="form-input" id="form-notes" placeholder="Letters of recommendation, draft essay outlines, reminders..." style="min-height: 70px; resize: vertical;"></textarea>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="modal-cancel-btn" onclick="closeScholarshipModal()" type="button">Cancel</button>
+                        <button class="modal-save-btn" type="submit">Save Scholarship</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Toast Notifications -->
+    <div id="toast">
+        <span class="material-symbols-outlined success-icon" id="toast-icon">check_circle</span>
+        <span id="toast-message">Preferences auto-saved</span>
+    </div>
+
+    <!-- Application Script Logic -->
+    <script>
+        // =========================================================================
+        // SECTION 1: TIMESTAMP-BASED DATA ARCHITECTURE
+        // =========================================================================
+        let databaseArray = []; // The generic container for all data envelopes
+
+        // UI State cache mapped from flat databaseArray
+        const state = {
+            profile: {
+                name: "Alex Chen",
+                currency: "$",
+                fundingGoal: 145000
+            },
+            scholarships: [],
+            types: ["Merit-based", "Needs-based", "Diversity", "Athletic", "Other"],
+            filters: {
+                searchQuery: "",
+                status: "All Statuses",
+                priority: "All Priorities",
+                decision: "Decision: All"
+            },
+            calendar: {
+                viewYear: 0,
+                viewMonth: 0,
+                startDayOfWeek: 0 // 0 = Sunday, 1 = Monday
+            },
+            miniCalendar: {
+                viewYear: 0,
+                viewMonth: 0,
+                selectedDay: 0
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // INSTANT UI PRE-LOADER: Flip the button state before Google scripts load
+            if (localStorage.getItem('has_linked_google') === 'true') {
+                const authBtn = document.getElementById('authBtn');
+                authBtn.textContent = 'Syncing...';
+                authBtn.className = 'btn-secondary btn-sm';
+                authBtn.disabled = true; // Lock the button to prevent accidental clicks
+
+                setSyncStatus("Connecting to Drive...", "active");
+            }
+
+            // Theme & view preferences setup
+            initTheme();
+            initStorageAndSeeding();
+
+            // Storage sandboxing: load using scholarship specific local key
+            const storedData = localStorage.getItem('scholarpath_local_data');
+            if (storedData) {
+                try { databaseArray = JSON.parse(storedData); } catch (e) { databaseArray = []; }
+            }
+            render();
+        });
+
+        function updateDataState(newData, saveLocal = true) {
+            databaseArray = newData;
+            if (saveLocal) {
+                localStorage.setItem('scholarpath_local_data', JSON.stringify(databaseArray));
+            }
+            render();
+        }
+
+        function render() {
+            // 1. Initialize deterministic defaults if empty
+            initDefaultsIfEmpty();
+            
+            // 2. Synchronize databaseArray to local state structure
+            syncDatabaseToState();
+            
+            // 3. Render all UI elements
+            renderAllViews();
+        }
+
+        // Seeding databaseArray defaults deterministically
+        function initDefaultsIfEmpty() {
+            const profiles = databaseArray.filter(r => r.table === 'profile' && !r.deleted);
+            const types = databaseArray.filter(r => r.table === 'types' && !r.deleted);
+            const scholarships = databaseArray.filter(r => r.table === 'scholarships' && !r.deleted);
+            
+            let changed = false;
+            
+            if (profiles.length === 0) {
+                databaseArray.push({
+                    id: "profile_0",
+                    table: "profile",
+                    updatedAt: 0,
+                    deleted: false,
+                    data: {
+                        name: "Alex Chen",
+                        currency: "$",
+                        fundingGoal: 145000
+                    }
+                });
+                changed = true;
+            }
+            
+            if (types.length === 0) {
+                const defaultTypes = ["Merit-based", "Needs-based", "Diversity", "Athletic", "Other"];
+                defaultTypes.forEach((t, idx) => {
+                    databaseArray.push({
+                        id: "types_" + idx,
+                        table: "types",
+                        updatedAt: 0,
+                        deleted: false,
+                        data: { name: t }
+                    });
+                });
+                changed = true;
+            }
+            
+            const isCleared = localStorage.getItem("scholarpath_cleared") === "true";
+            if (scholarships.length === 0 && !isCleared) {
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const nextMm = String((today.getMonth() + 1) % 12 + 1).padStart(2, '0');
+                const nextYyyy = today.getMonth() === 11 ? yyyy + 1 : yyyy;
+                
+                const defaultScholarships = [
+                    {
+                        name: "Global Tech Excellence",
+                        type: "Merit-based",
+                        amount: 25000,
+                        deadline: `${yyyy}-${mm}-15`,
+                        status: "In Progress",
+                        website: "https://google.com",
+                        eligibility: "Requires 3 letters of reference and a 500-word essay detailing future tech innovations.",
+                        resultDate: `${yyyy}-${nextMm}-01`,
+                        decision: "Pending",
+                        notes: "Highly competitive. Focus essay on AI ethics."
+                    },
+                    {
+                        name: "STEM Innovation Award",
+                        type: "Needs-based",
+                        amount: 45000,
+                        deadline: `${yyyy}-${mm}-22`,
+                        status: "Submitted",
+                        website: "https://google.com",
+                        eligibility: "Enrolled in undergraduate engineering degree. Minimum GPA of 3.8.",
+                        resultDate: `${yyyy}-${mm}-22`,
+                        decision: "Finalist",
+                        notes: "Interview went very well! Follow up in two weeks."
+                    },
+                    {
+                        name: "Diversity in Tech Fellowship",
+                        type: "Diversity",
+                        amount: 15000,
+                        deadline: `${nextYyyy}-${nextMm}-05`,
+                        status: "Not Started",
+                        website: "https://google.com",
+                        eligibility: "Underrepresented minority groups in Computer Science or STEM disciplines.",
+                        resultDate: `${nextYyyy}-${String(Number(nextMm)%12+1).padStart(2, '0')}-15`,
+                        decision: "Pending",
+                        notes: "Need to start drafting statements by mid-month."
+                    }
+                ];
+                
+                defaultScholarships.forEach((s, idx) => {
+                    databaseArray.push({
+                        id: "scholarships_" + idx,
+                        table: "scholarships",
+                        updatedAt: 0,
+                        deleted: false,
+                        data: s
+                    });
+                });
+                changed = true;
+            }
+            
+            if (changed) {
+                localStorage.setItem('scholarpath_local_data', JSON.stringify(databaseArray));
+            }
+        }
+
+        // Map databaseArray to local state structure
+        function syncDatabaseToState() {
+            const profileRecord = databaseArray.find(r => r.table === 'profile' && !r.deleted);
+            if (profileRecord) {
+                state.profile = profileRecord.data;
+            }
+            
+            const typeRecords = databaseArray.filter(r => r.table === 'types' && !r.deleted);
+            if (typeRecords.length > 0) {
+                state.types = typeRecords.map(r => r.data.name);
+            } else {
+                state.types = [];
+            }
+            
+            state.scholarships = databaseArray
+                .filter(r => r.table === 'scholarships' && !r.deleted)
+                .map(r => ({
+                    id: r.id,
+                    name: r.data.name,
+                    type: r.data.type,
+                    amount: Number(r.data.amount),
+                    deadline: r.data.deadline,
+                    status: r.data.status,
+                    priority: r.data.priority,
+                    website: r.data.website,
+                    eligibility: r.data.eligibility,
+                    resultDate: r.data.resultDate,
+                    decision: r.data.decision,
+                    notes: r.data.notes
+                }));
+        }
+
+        function exportData() {
+            if (!databaseArray.length) return alert("No data to export.");
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(databaseArray, null, 2));
+            const a = document.createElement('a'); a.setAttribute("href", dataStr); a.setAttribute("download", "scholarpath_export.json"); a.click();
+        }
+        
+        function triggerImport() {
+            if (confirm("Your current data will be replaced by the imported data. Do you want to continue?")) {
+                document.getElementById('importFile').click();
+            }
+        }
+        
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (Array.isArray(parsed)) {
+                        updateDataState(parsed, true);
+                        // Safe conflict resolution merger cycle instead of blind autoUploadToCloud
+                        pullAndMergeCloudData();
+
+                        // Added success message confirmation
+                        alert("Data has been successfully imported! ✅");
+                    } else {
+                        alert("Import failed: JSON structure is incorrect.");
+                    }
+                } catch (err) { alert("Invalid JSON file."); }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // Soft deletion of everything
+        function clearAllData() {
+            if (confirm("CRITICAL WARNING: This will permanently delete ALL scholarships and reset your profile settings. Are you absolutely sure?")) {
+                databaseArray = databaseArray.map(record => ({
+                    ...record,
+                    deleted: true,
+                    updatedAt: Date.now()
+                }));
+                localStorage.setItem("scholarpath_cleared", "true");
+                updateDataState(databaseArray, true);
+                pullAndMergeCloudData();
+                showToast("All data cleared. Resetting tracker...");
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t] || t));
+        }
+
+        // =========================================================================
+        // SECTION 2: TOKEN-CACHED REALTIME CLOUD SYNC ENGINE
+        // =========================================================================
+        const CLIENT_ID = '305632493984-9q07n0i677ku1btdds1scke8pam5ag3s.apps.googleusercontent.com';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+
+        let tokenClient;
+        let gapiInited = false;
+        let gisimInited = false;
+        let accessToken = null;
+        let cloudFileId = null;
+        let silentRefreshTimeout = null;
+        let isRefreshingToken = false;
+        let needsManualReconnect = false;
+
+        function setSyncStatus(text, type = '') {
+            const el = document.getElementById('syncStatusIndicator');
+            if (el) {
+                if (!text) {
+                    // If the text is blank, hide the badge completely
+                    el.style.display = 'none';
+                } else {
+                    // If there is text, show the badge
+                    el.style.display = 'inline-flex';
+                    el.innerText = text;
+                    el.className = 'sync-status ' + type;
+
+                    if (type !== 'error') {
+                        el.style.cursor = 'default';
+                        el.onclick = null;
+                    } else {
+                        el.style.cursor = "pointer";
+                        el.onclick = () => {
+                            if (needsManualReconnect) {
+                                setSyncStatus("Connecting...", "active");
+                                tokenClient.requestAccessToken({ prompt: '' });
+                            } else {
+                                setSyncStatus("Syncing...", "active");
+                                pullAndMergeCloudData();
+                            }
+                        };
+                    }
+                }
+            }
+        }
+
+        function gapiLoaded() {
+            gapi.load('client', async () => {
+                await gapi.client.init({ discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'] });
+                gapiInited = true;
+                evaluateRoutingSession();
+            });
+        }
+
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: async (resp) => {
+                    isRefreshingToken = false;
+                    if (silentRefreshTimeout) {
+                        clearTimeout(silentRefreshTimeout);
+                        silentRefreshTimeout = null;
+                    }
+
+                    if (resp.error !== undefined) {
+                        needsManualReconnect = true;
+                        triggerReconnectState();
+                        return;
+                    }
+
+                    needsManualReconnect = false;
+                    accessToken = resp.access_token;
+                    gapi.client.setToken({ access_token: accessToken });
+
+                    localStorage.setItem('google_access_token', accessToken);
+                    localStorage.setItem('google_token_expiry', (Date.now() + (resp.expires_in * 1000)).toString());
+                    localStorage.setItem('has_linked_google', 'true');
+
+                    updateAuthUI(true);
+                    setSyncStatus("Cloud Synced ✅", "active");
+
+                    await pullAndMergeCloudData();
+                },
+            });
+            gisimInited = true;
+            evaluateRoutingSession();
+        }
+        window.addEventListener('load', () => { gapiLoaded(); gisLoaded(); });
+
+        function evaluateRoutingSession() {
+            if (!gapiInited || !gisimInited) return;
+
+            if (localStorage.getItem('has_linked_google') === 'true') {
+                const cachedToken = localStorage.getItem('google_access_token');
+                const expiry = parseInt(localStorage.getItem('google_token_expiry') || '0');
+
+                if (cachedToken && Date.now() < expiry) {
+                    // TOKEN IS VALID
+                    accessToken = cachedToken;
+                    gapi.client.setToken({ access_token: accessToken });
+                    updateAuthUI(true);
+                    setSyncStatus("Cloud Synced ✅", "active");
+                    pullAndMergeCloudData();
+                } else {
+                    if (isRefreshingToken) return;
+
+                    // TOKEN EXPIRED
+                    // 1. Detect if the user is on a mobile device (via user agent or screen size)
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+                    updateAuthUI(true);
+
+                    if (isMobile) {
+                        // 2. INSTANT FALLBACK FOR MOBILE
+                        needsManualReconnect = true;
+                        triggerReconnectState();
+                    } else {
+                        // 3. DESKTOP ONLY: Attempt the silent refresh
+                        isRefreshingToken = true;
+                        setSyncStatus("Reconnecting...", "active");
+
+                        silentRefreshTimeout = setTimeout(() => {
+                            console.warn("Silent refresh timed out. Forcing manual reconnect button.");
+                            isRefreshingToken = false;
+                            needsManualReconnect = true;
+                            triggerReconnectState();
+                        }, 4000);
+
+                        tokenClient.requestAccessToken({ prompt: 'none' });
+                    }
+                }
+            } else {
+                // NEVER CONNECTED OR DISCONNECTED
+                updateAuthUI(false);
+            }
+        }
+        function triggerReconnectState() {
+            setSyncStatus("Session Expired - Tap to Reconnect 🔄", "error");
+        }
+
+        function handleAuthFailure() {
+            localStorage.removeItem('google_access_token');
+            updateAuthUI(false);
+        }
+        
+        function updateAuthUI(isConnected) {
+            const authBtn = document.getElementById('authBtn');
+            authBtn.disabled = false; // Always unlock the button once state resolves
+
+            if (isConnected) {
+                authBtn.textContent = 'Disconnect';
+                authBtn.className = 'btn-secondary btn-danger-text';
+            } else {
+                authBtn.textContent = 'Connect Drive';
+                authBtn.className = 'btn-primary';
+                setSyncStatus("", "");
+            }
+        }
+
+        function handleAuthClick() {
+            if (localStorage.getItem('has_linked_google') === 'true') {
+                // DISCONNECT LOGIC (Local Device Only)
+                accessToken = null;
+                isRefreshingToken = false;
+                needsManualReconnect = false;
+
+                // Wipe the browser memory for this specific device
+                localStorage.setItem('has_linked_google', 'false');
+                localStorage.removeItem('google_access_token');
+                localStorage.removeItem('google_token_expiry');
+
+                // Update the UI to show disconnected state
+                updateAuthUI(false);
+
+                // Optional: Clear the screen data
+                databaseArray = [];
+                render();
+
+            } else {
+                // CONNECT LOGIC
+                if (!gapiInited || !gisimInited) return alert("System booting. Please retry in a moment.");
+                setSyncStatus("Connecting...", "active");
+                tokenClient.requestAccessToken({ prompt: 'select_account consent' });
+            }
+        }
+        
+        async function pullAndMergeCloudData() {
+            if (!accessToken) return;
+            try {
+                const response = await gapi.client.drive.files.list({
+                    q: "name = 'scholarpath_backup.json' and trashed = false",
+                    spaces: 'appDataFolder',
+                    fields: 'files(id, name)'
+                });
+
+                const files = response.result.files;
+                cloudFileId = files.length > 0 ? files[0].id : null;
+
+                if (cloudFileId) {
+                    const fileData = await gapi.client.drive.files.get({ fileId: cloudFileId, alt: 'media' });
+                    const remotePayload = fileData.result;
+
+                    // Look for the generic "records" array
+                    if (remotePayload && remotePayload.records) {
+                        const cloudRecords = remotePayload.records;
+                        const mergedMap = new Map();
+
+                        // 1. Load Cloud Envelopes into the Map
+                        cloudRecords.forEach(item => mergedMap.set(item.id, item));
+
+                        // 2. Compare Local Envelopes vs Cloud Envelopes item-by-item
+                        let localHasNewerEdits = false;
+                        databaseArray.forEach(localItem => {
+                            const cloudItem = mergedMap.get(localItem.id);
+                            // If local item is newer, or it doesn't exist in the cloud yet, local wins
+                            if (!cloudItem || (localItem.updatedAt > (cloudItem.updatedAt || 0))) {
+                                mergedMap.set(localItem.id, localItem);
+                                localHasNewerEdits = true;
+                            }
+                        });
+
+                        // Update our screen with the perfectly merged data
+                        const finalMergedRecords = Array.from(mergedMap.values());
+                        updateDataState(finalMergedRecords, true);
+
+                        if (localHasNewerEdits) await autoUploadToCloud();
+                    }
+                } else {
+                    await autoUploadToCloud();
+                }
+                setSyncStatus("Cloud Synced ✅", "active");
+            } catch (err) {
+                console.error("Sync pull execution exception:", err);
+                setSyncStatus("Sync Paused ⚠️", "error");
+                if (err.status === 401) {
+                    // Force expiration flag and trigger a silent refresh instead of logging out
+                    localStorage.setItem('google_token_expiry', '0');
+                    evaluateRoutingSession();
+                }
+            }
+        }
+
+        async function autoUploadToCloud() {
+            if (localStorage.getItem('has_linked_google') !== 'true' || !accessToken) return;
+            setSyncStatus("Saving to Cloud...", "active");
+
+            try {
+                if (!cloudFileId) {
+                    const response = await gapi.client.drive.files.list({
+                        q: "name = 'scholarpath_backup.json' and trashed = false",
+                        spaces: 'appDataFolder',
+                        fields: 'files(id)'
+                    });
+                    if (response.result.files.length > 0) {
+                        cloudFileId = response.result.files[0].id;
+                    } else {
+                        const metaResp = await gapi.client.drive.files.create({
+                            resource: { name: 'scholarpath_backup.json', parents: ['appDataFolder'] },
+                            fields: 'id'
+                        });
+                        cloudFileId = metaResp.result.id;
+                    }
+                }
+
+                // Upload the generic database array
+                const payload = { records: databaseArray };
+
+                await gapi.client.request({
+                    path: `https://www.googleapis.com/upload/drive/v3/files/${cloudFileId}?uploadType=media`,
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                setSyncStatus("Cloud Synced ✅", "active");
+            } catch (err) {
+                console.error("Cloud engine commit intercept:", err);
+                setSyncStatus("Sync Paused ⚠️", "error");
+                if (err.status === 401) {
+                    // Force expiration flag and trigger a silent refresh instead of logging out
+                    localStorage.setItem('google_token_expiry', '0');
+                    evaluateRoutingSession();
+                }
+            }
+        }
+        
+        // =========================================================================
+        // SECTION 3: MICRO-INTERACTION SYNC ENGINE (OPTION 4)
+        // =========================================================================
+
+        // Set the initial clock so it doesn't double-trigger on first load
+        let lastInteractionSyncTime = Date.now();
+        const SYNC_COOLDOWN_MS = 300000;
+
+        function handleMicroInteraction() {
+            // Stop completely if the user is not logged in or the token is missing
+            if (localStorage.getItem('has_linked_google') !== 'true' || !accessToken) return;
+            if (isRefreshingToken || needsManualReconnect) return;
+
+            // NEW CODE: Check if the token expired while the laptop was asleep
+            const expiry = parseInt(localStorage.getItem('google_token_expiry') || '0');
+            if (Date.now() >= expiry) {
+                evaluateRoutingSession(); // Trigger the silent refresh
+                return; // Stop the sync attempt so it doesn't crash
+            }
+
+            const now = Date.now();
+            if (now - lastInteractionSyncTime > SYNC_COOLDOWN_MS) {
+                lastInteractionSyncTime = now; // Reset the clock immediately
+
+                // Trigger the background pull
+                setSyncStatus("Checking...", "active");
+                pullAndMergeCloudData();
+            }
+        }
+
+        // Listeners for physical user presence and tab focus
+        window.addEventListener('mousemove', handleMicroInteraction);
+        window.addEventListener('keydown', handleMicroInteraction);
+        window.addEventListener('touchstart', handleMicroInteraction, { passive: true });
+        window.addEventListener('focus', handleMicroInteraction);
+
+        // =========================================================================
+        // SECTION 4: APPLICATION LIFECYCLE, RENDERING, AND MUTATIONS
+        // =========================================================================
+
+        function initStorageAndSeeding() {
+            const storedWeekStart = localStorage.getItem("scholarpath_calendar_weekstart");
+
+            if (storedWeekStart) {
+                state.calendar.startDayOfWeek = parseInt(storedWeekStart, 10);
+            }
+
+            const today = new Date();
+            // Sync current views centered around current month
+            state.calendar.viewYear = today.getFullYear();
+            state.calendar.viewMonth = today.getMonth();
+            state.miniCalendar.viewYear = today.getFullYear();
+            state.miniCalendar.viewMonth = today.getMonth();
+            state.miniCalendar.selectedDay = today.getDate();
+        }
+
+        // View Orchestrator
+        function renderAllViews() {
+            renderDashboardStats();
+            renderScholarshipsGrid();
+            renderMiniCalendar();
+            renderLargeCalendar();
+            populateSetupPreferences();
+            populateFormOptions();
+            updateSidebarVisuals();
+        }
+
+        // Theme Engine
+        function initTheme() {
+            const storedTheme = localStorage.getItem("scholarpath_theme") || "light";
+            setTheme(storedTheme);
+        }
+
+        function setTheme(theme) {
+            const html = document.documentElement;
+            const themeBtnIcon = document.querySelector("#theme-toggle-btn span");
+            
+            if (theme === "dark") {
+                html.classList.remove("light");
+                html.classList.add("dark");
+                if (themeBtnIcon) themeBtnIcon.textContent = "light_mode";
+            } else {
+                html.classList.remove("dark");
+                html.classList.add("light");
+                if (themeBtnIcon) themeBtnIcon.textContent = "dark_mode";
+            }
+            
+            localStorage.setItem("scholarpath_theme", theme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = localStorage.getItem("scholarpath_theme") || "light";
+            const newTheme = currentTheme === "light" ? "dark" : "light";
+            setTheme(newTheme);
+            showToast(`Switched to ${newTheme} mode`);
+        }
+
+        // Global Layouts Handlers
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            if (window.innerWidth <= 768) {
+                closeMobileSidebar();
+            } else {
+                sidebar.classList.toggle("collapsed");
+            }
+        }
+
+        function openMobileSidebar() {
+            document.getElementById("sidebar").classList.add("mobile-active");
+            document.getElementById("sidebarBackdrop").classList.add("active");
+        }
+
+        // Sidebar Overlay Backdrop for Mobile drawer
+        function closeMobileSidebar() {
+            document.getElementById("sidebar").classList.remove("mobile-active");
+            document.getElementById("sidebarBackdrop").classList.remove("active");
+        }
+
+        function updateSidebarVisuals() {
+            document.getElementById("display-user-name").textContent = state.profile.name;
+        }
+
+        function switchTab(tabId) {
+            closeMobileSidebar();
+
+            // Toggle Sidebar Nav Highlights
+            document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active-tab"));
+            document.querySelector(`nav button[data-tab="${tabId}"]`).classList.add("active-tab");
+            
+            // Toggle Display Panes
+            document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active-pane"));
+            document.getElementById(`tab-${tabId}`).classList.add("active-pane");
+
+            // Toggle Search Bar in Header
+            const searchHeader = document.getElementById("header-search-container");
+            const searchMobile = document.getElementById("mobile-search-container");
+            if (tabId === "tracker") {
+                searchHeader.style.display = "";
+                searchMobile.style.display = "";
+            } else {
+                searchHeader.style.display = "none";
+                searchMobile.style.display = "none";
+            }
+        }
+
+        // Toast Engine
+        function showToast(message, isError = false) {
+            const toast = document.getElementById("toast");
+            const icon = document.getElementById("toast-icon");
+            const text = document.getElementById("toast-message");
+
+            text.textContent = message;
+            if (isError) {
+                icon.textContent = "error";
+                icon.className = "material-symbols-outlined error-icon";
+            } else {
+                icon.textContent = "check_circle";
+                icon.className = "material-symbols-outlined success-icon";
+            }
+
+            toast.classList.add("active");
+            setTimeout(() => {
+                toast.classList.remove("active");
+            }, 3000);
+        }
+
+        // Stats Display Panel Renders
+        function renderDashboardStats() {
+            // Potential sum calculation
+            const potentialSum = state.scholarships.reduce((acc, current) => acc + Number(current.amount), 0);
+            document.getElementById("stat-total-amount").textContent = formatCurrency(potentialSum);
+
+            // Total submitted
+            const submittedCount = state.scholarships.filter(s => s.status === "Submitted").length;
+            document.getElementById("stat-submitted-count").textContent = submittedCount;
+
+            // Total upcoming deadlines count (deadline within next 30 days)
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const thirtyDaysLater = new Date();
+            thirtyDaysLater.setDate(today.getDate() + 30);
+            
+            const upcomingCount = state.scholarships.filter(s => {
+                if (!s.deadline) return false;
+                const deadlineDate = new Date(s.deadline);
+                return deadlineDate >= today && deadlineDate <= thirtyDaysLater;
+            }).length;
+            document.getElementById("stat-deadlines-count").textContent = upcomingCount;
+
+            // Goal metrics
+            const securedSum = state.scholarships
+                .filter(s => s.status === "Awarded" || s.decision === "Awarded")
+                .reduce((acc, curr) => acc + Number(curr.amount), 0);
+            
+            document.getElementById("current-secured-val").textContent = formatCurrency(securedSum);
+            document.getElementById("display-funding-goal").textContent = formatCurrency(state.profile.fundingGoal);
+
+            const percentage = state.profile.fundingGoal > 0 
+                ? Math.min(100, Math.round((securedSum / state.profile.fundingGoal) * 100)) 
+                : 0;
+            
+            document.getElementById("goal-percentage").textContent = `${percentage}%`;
+            document.getElementById("goal-progress-bar").style.width = `${percentage}%`;
+        }
+
+        // Filtering & Search Live Controls
+        function handleSearch(val) {
+            state.filters.searchQuery = val.trim().toLowerCase();
+            renderScholarshipsGrid();
+            // Sync values across mobile and desktop search bars
+            document.getElementById("searchBar").value = val;
+            document.getElementById("mobileSearchBar").value = val;
+        }
+
+        // Filter Select Change Handler
+        function handleFilterChange() {
+            state.filters.status = document.getElementById("filter-status").value;
+            state.filters.priority = document.getElementById("filter-priority").value;
+            state.filters.decision = document.getElementById("filter-decision").value;
+            renderScholarshipsGrid();
+        }
+
+        // Bento Grid Render logic
+        function renderScholarshipsGrid() {
+            const grid = document.getElementById("scholarship-grid");
+            grid.innerHTML = "";
+
+            const filtered = state.scholarships.filter(s => {
+                // Search live text
+                const matchesSearch = s.name.toLowerCase().includes(state.filters.searchQuery) ||
+                                      s.type.toLowerCase().includes(state.filters.searchQuery) ||
+                                      (s.eligibility && s.eligibility.toLowerCase().includes(state.filters.searchQuery)) ||
+                                      (s.notes && s.notes.toLowerCase().includes(state.filters.searchQuery));
+                
+                // Dropdown status filters
+                const matchesStatus = state.filters.status === "All Statuses" || s.status === state.filters.status;
+
+                // Priority matching based on explicit priority field with amount fallback
+                const priorityVal = s.priority || (s.amount >= 30000 ? "High" : (s.amount >= 15000 ? "Medium" : "Low"));
+                const matchesPriority = state.filters.priority === "All Priorities" || priorityVal === state.filters.priority;
+
+                // Decision dropdown
+                const matchesDecision = state.filters.decision === "Decision: All" || s.decision === state.filters.decision;
+
+                return matchesSearch && matchesStatus && matchesPriority && matchesDecision;
+            });
+
+            // Update Counter
+            document.getElementById("result-count").textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; padding: 64px 32px; text-align: center; color: var(--on-surface-variant); background-color: var(--surface-container-low); border-radius: var(--radius-lg); border: 1px dashed var(--slate-border);">
+                        <span class="material-symbols-outlined" style="font-size: 48px; color: var(--outline-variant); margin-bottom: 12px; display: block;">search_off</span>
+                        <p style="font-weight: 700; font-size: 16px; margin-bottom: 4px;">No scholarships found</p>
+                        <p style="font-size: 12px;">Try adjusting your search queries or filter dropdown tags.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by upcoming deadline date
+            filtered.sort((a, b) => {
+                if (!a.deadline) return 1;
+                if (!b.deadline) return -1;
+                return new Date(a.deadline) - new Date(b.deadline);
+            });
+
+            filtered.forEach(s => {
+                const priorityVal = s.priority || (s.amount >= 30000 ? "High" : (s.amount >= 15000 ? "Medium" : "Low"));
+                const badgeClass = `badge-priority-${priorityVal.toLowerCase()}`;
+
+                // Determine status badge class
+                let statusClass = "status-notstarted";
+                if (s.status === "In Progress") statusClass = "status-inprogress";
+                else if (s.status === "Submitted") statusClass = "status-submitted";
+                else if (s.status === "Awarded") statusClass = "status-awarded";
+                else if (s.status === "Rejected") statusClass = "status-rejected";
+
+                const card = document.createElement("div");
+                card.className = "scholarship-card";
+                card.onclick = (e) => {
+                    // Prevent form edit triggering when clicking icon buttons
+                    if (e.target.closest("button") || e.target.closest("a")) return;
+                    openScholarshipModal("edit", s.id);
+                };
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <h3 title="${escapeHTML(s.name)}">${escapeHTML(s.name)}</h3>
+                            <p class="type">${escapeHTML(s.type)}</p>
+                        </div>
+                        <span class="badge ${badgeClass}">${priorityVal}</span>
+                    </div>
+
+                    <div class="card-amount-block">
+                        <span class="material-symbols-outlined">payments</span>
+                        <span>${formatCurrency(s.amount)}</span>
+                    </div>
+
+                    <div class="card-deadline-block">
+                        <span class="material-symbols-outlined">calendar_today</span>
+                        <span>Deadline: ${formatFriendlyDate(s.deadline)}</span>
+                    </div>
+
+                    <div class="card-body-divider">
+                        <p class="card-eligibility" title="${escapeHTML(s.eligibility || 'No criteria specified')}">
+                            ${escapeHTML(s.eligibility) || '<span style="color: var(--outline-variant); font-style: italic;">No eligibility criteria specified.</span>'}
+                        </p>
+                    </div>
+
+                    <div class="card-footer">
+                        <span class="badge-status ${statusClass}">${s.status}</span>
+                        
+                        <div class="card-actions">
+                            ${s.website ? `
+                                <a class="icon-btn" href="${s.website}" target="_blank" title="Visit website" style="display: flex; align-items: center; justify-content: center; text-decoration: none;">
+                                    <span class="material-symbols-outlined" style="font-size: 18px;">open_in_new</span>
+                                </a>
+                            ` : ''}
+                            <button class="icon-btn" onclick="openScholarshipModal('edit', '${s.id}')" title="Edit details">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">edit_square</span>
+                            </button>
+                            <button class="icon-btn delete-btn-card" onclick="deleteScholarshipRecord('${s.id}')" title="Delete record">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Mini Sidebar Calendar Generator
+        function renderMiniCalendar() {
+            const grid = document.getElementById("mini-calendar-grid");
+            grid.innerHTML = "";
+
+            const yr = state.miniCalendar.viewYear;
+            const mo = state.miniCalendar.viewMonth;
+            const startDay = state.calendar.startDayOfWeek; // 0 = Sun, 1 = Mon
+
+            const dateObj = new Date(yr, mo, 1);
+            document.getElementById("mini-cal-month-title").textContent = dateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+            // Weekdays labels rendering for mini calendar
+            const weekdaysRow = document.getElementById("mini-cal-weekdays");
+            if (weekdaysRow) {
+                weekdaysRow.innerHTML = "";
+                const sunWeekdays = ["S", "M", "T", "W", "T", "F", "S"];
+                const monWeekdays = ["M", "T", "W", "T", "F", "S", "S"];
+                const activeWeekdays = startDay === 0 ? sunWeekdays : monWeekdays;
+
+                activeWeekdays.forEach(day => {
+                    const span = document.createElement("span");
+                    span.textContent = day;
+                    weekdaysRow.appendChild(span);
+                });
+            }
+
+            const firstDayIndex = new Date(yr, mo, 1).getDay();
+            const lastDay = new Date(yr, mo + 1, 0).getDate();
+            const prevLastDay = new Date(yr, mo, 0).getDate();
+
+            let adjustedOffset = startDay === 0 ? firstDayIndex : (firstDayIndex === 0 ? 6 : firstDayIndex - 1);
+
+            // Previous month overflow days
+            for (let i = adjustedOffset; i > 0; i--) {
+                const dayDiv = document.createElement("div");
+                dayDiv.className = "mini-day other";
+                dayDiv.textContent = prevLastDay - i + 1;
+                grid.appendChild(dayDiv);
+            }
+
+            const today = new Date();
+
+            // Current month days
+            for (let day = 1; day <= lastDay; day++) {
+                const dayDiv = document.createElement("div");
+                dayDiv.className = "mini-day";
+                
+                const isSelected = day === state.miniCalendar.selectedDay;
+                const isToday = day === today.getDate() && mo === today.getMonth() && yr === today.getFullYear();
+                
+                if (isSelected) dayDiv.classList.add("selected");
+                if (isToday) dayDiv.classList.add("today");
+                
+                dayDiv.textContent = day;
+                dayDiv.onclick = () => selectMiniCalendarDay(day);
+
+                const currentStr = `${yr}-${String(mo + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                const hasDeadline = state.scholarships.some(s => s.deadline === currentStr);
+                const hasResult = state.scholarships.some(s => s.resultDate === currentStr);
+
+                if (hasDeadline && hasResult) {
+                    dayDiv.innerHTML += `<span class="dot" style="background: linear-gradient(90deg, var(--warning) 50%, var(--success) 50%);"></span>`;
+                } else if (hasDeadline) {
+                    dayDiv.innerHTML += `<span class="dot dot-deadline"></span>`;
+                } else if (hasResult) {
+                    dayDiv.innerHTML += `<span class="dot dot-result"></span>`;
+                }
+
+                grid.appendChild(dayDiv);
+            }
+
+            const totalCells = grid.children.length;
+            const remaining = (7 - (totalCells % 7)) % 7;
+            for (let i = 1; i <= remaining; i++) {
+                const dayDiv = document.createElement("div");
+                dayDiv.className = "mini-day other";
+                dayDiv.textContent = i;
+                grid.appendChild(dayDiv);
+            }
+
+            updateDailyDeadlinesPanel();
+        }
+
+        function navigateMiniCalendar(direction) {
+            state.miniCalendar.viewMonth += direction;
+            if (state.miniCalendar.viewMonth < 0) {
+                state.miniCalendar.viewMonth = 11;
+                state.miniCalendar.viewYear -= 1;
+            } else if (state.miniCalendar.viewMonth > 11) {
+                state.miniCalendar.viewMonth = 0;
+                state.miniCalendar.viewYear += 1;
+            }
+            state.miniCalendar.selectedDay = 1;
+            renderMiniCalendar();
+        }
+
+        function selectMiniCalendarDay(day) {
+            state.miniCalendar.selectedDay = day;
+            renderMiniCalendar();
+        }
+
+        function updateDailyDeadlinesPanel() {
+            const list = document.getElementById("daily-results-list");
+            const header = document.getElementById("deadlines-header");
+            const countBadge = document.getElementById("daily-deadline-count");
+
+            const yr = state.miniCalendar.viewYear;
+            const mo = state.miniCalendar.viewMonth;
+            const day = state.miniCalendar.selectedDay;
+
+            const targetDateStr = `${yr}-${String(mo + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const targetDisplayDate = new Date(yr, mo, day);
+
+            header.textContent = targetDisplayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            const events = [];
+            state.scholarships.forEach(s => {
+                if (s.deadline === targetDateStr) {
+                    events.push({ scholarship: s, type: "deadline" });
+                }
+                if (s.resultDate === targetDateStr) {
+                    events.push({ scholarship: s, type: "result" });
+                }
+            });
+
+            countBadge.textContent = events.length;
+            list.innerHTML = "";
+
+            if (events.length === 0) {
+                list.innerHTML = `<p style="font-size: 11px; font-style: italic; color: var(--outline); text-align: center; padding: 24px 0;">No actions scheduled.</p>`;
+                return;
+            }
+
+            events.forEach(ev => {
+                const s = ev.scholarship;
+                const isDeadline = ev.type === "deadline";
+                const item = document.createElement("div");
+                item.className = "due-item";
+                item.onclick = () => openScholarshipModal("edit", s.id);
+
+                let explicitPriority = s.priority || (s.amount >= 30000 ? "High" : (s.amount >= 15000 ? "Medium" : "Low"));
+                let priorityVal = `${explicitPriority} Priority`;
+                let badgeClass = `badge-priority-${explicitPriority.toLowerCase()}`;
+
+                item.innerHTML = `
+                    <div class="due-item-header">
+                        <span class="badge ${badgeClass}">${priorityVal}</span>
+                        <span class="badge-status ${s.status === "Submitted" ? 'status-submitted' : (s.status === "In Progress" ? 'status-inprogress' : 'status-notstarted')}" style="font-size: 9px; padding: 4px 10px; font-weight: 800; border-radius: var(--radius-full);">${s.status}</span>
+                    </div>
+                    <p class="due-item-title">${escapeHTML(s.name)}</p>
+                    <p style="font-size: 9px; font-weight: bold; margin-top: 4px; display: flex; align-items: center; gap: 4px; color: ${isDeadline ? 'var(--warning)' : 'var(--success)'};">
+                        <span class="material-symbols-outlined" style="font-size: 11px;">${isDeadline ? 'timer' : 'celebration'}</span>
+                        ${isDeadline ? 'DEADLINE DUE' : 'RELEASE RESULTS'}
+                    </p>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Full Month Large Calendar Renderer
+        function renderLargeCalendar() {
+            const grid = document.getElementById("large-calendar-grid");
+            const weekdaysRow = document.getElementById("large-cal-weekdays");
+            
+            grid.innerHTML = "";
+            weekdaysRow.innerHTML = "";
+
+            const yr = state.calendar.viewYear;
+            const mo = state.calendar.viewMonth;
+            const startDay = state.calendar.startDayOfWeek; // 0 = Sun, 1 = Mon
+
+            const dateObj = new Date(yr, mo, 1);
+            document.getElementById("calendar-month-title").textContent = dateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+            const sunWeekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const monWeekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+            const activeWeekdays = startDay === 0 ? sunWeekdays : monWeekdays;
+
+            activeWeekdays.forEach(day => {
+                const dayHeader = document.createElement("div");
+                dayHeader.className = "calendar-weekday";
+                dayHeader.textContent = day;
+                weekdaysRow.appendChild(dayHeader);
+            });
+
+            const firstDayIndex = new Date(yr, mo, 1).getDay();
+            const lastDay = new Date(yr, mo + 1, 0).getDate();
+            const prevLastDay = new Date(yr, mo, 0).getDate();
+
+            let adjustedOffset = startDay === 0 ? firstDayIndex : (firstDayIndex === 0 ? 6 : firstDayIndex - 1);
+
+            // Previous month overflow days
+            for (let i = adjustedOffset; i > 0; i--) {
+                const prevDay = prevLastDay - i + 1;
+                const cell = document.createElement("div");
+                cell.className = "calendar-cell other-month";
+                
+                const cellMo = mo === 0 ? 11 : mo - 1;
+                const cellYr = mo === 0 ? yr - 1 : yr;
+                
+                cell.innerHTML = `<div class="calendar-cell-header"><span class="calendar-cell-day-num">${prevDay}</span></div>`;
+                cell.onclick = () => {
+                    state.calendar.viewYear = cellYr;
+                    state.calendar.viewMonth = cellMo;
+                    renderLargeCalendar();
+                };
+                grid.appendChild(cell);
+            }
+
+            const today = new Date();
+
+            // Current Month days
+            for (let day = 1; day <= lastDay; day++) {
+                const cell = document.createElement("div");
+                cell.className = "calendar-cell";
+
+                const isToday = day === today.getDate() && mo === today.getMonth() && yr === today.getFullYear();
+                if (isToday) cell.classList.add("today-cell");
+
+                cell.innerHTML = `
+                    <div class="calendar-cell-header">
+                        <span class="calendar-cell-day-num">${day}</span>
+                    </div>
+                    <div class="calendar-events-container"></div>
+                `;
+
+                cell.onclick = (e) => {
+                    if (e.target.closest(".calendar-event")) return;
+                    const selectedDateStr = `${yr}-${String(mo + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    openScholarshipModal("add", null, selectedDateStr);
+                };
+
+                const eventContainer = cell.querySelector(".calendar-events-container");
+                const currentStr = `${yr}-${String(mo + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                state.scholarships.forEach(s => {
+                    if (s.deadline === currentStr) {
+                        const eventTag = document.createElement("div");
+                        eventTag.className = "calendar-event event-deadline";
+                        eventTag.title = `Deadline: ${s.name}`;
+                        eventTag.onclick = (e) => {
+                            e.stopPropagation();
+                            openScholarshipModal("edit", s.id);
+                        };
+                        eventTag.innerHTML = `
+                            <span class="material-symbols-outlined">timer</span>
+                            <span>${escapeHTML(s.name)}</span>
+                        `;
+                        eventContainer.appendChild(eventTag);
+                    }
+
+                    if (s.resultDate === currentStr) {
+                        const eventTag = document.createElement("div");
+                        eventTag.className = "calendar-event event-result";
+                        eventTag.title = `Results: ${s.name}`;
+                        eventTag.onclick = (e) => {
+                            e.stopPropagation();
+                            openScholarshipModal("edit", s.id);
+                        };
+                        eventTag.innerHTML = `
+                            <span class="material-symbols-outlined">celebration</span>
+                            <span>${escapeHTML(s.name)}</span>
+                        `;
+                        eventContainer.appendChild(eventTag);
+                    }
+                });
+
+                grid.appendChild(cell);
+            }
+
+            // Fill calendar empty grids cells from next month
+            const currentTotal = grid.children.length;
+            const remaining = (7 - (currentTotal % 7)) % 7;
+            for (let i = 1; i <= remaining; i++) {
+                const cell = document.createElement("div");
+                cell.className = "calendar-cell other-month";
+
+                const cellMo = mo === 11 ? 0 : mo + 1;
+                const cellYr = mo === 11 ? yr + 1 : yr;
+
+                cell.innerHTML = `<div class="calendar-cell-header"><span class="calendar-cell-day-num">${i}</span></div>`;
+                cell.onclick = () => {
+                    state.calendar.viewYear = cellYr;
+                    state.calendar.viewMonth = cellMo;
+                    renderLargeCalendar();
+                };
+                grid.appendChild(cell);
+            }
+        }
+
+        function setCalendarWeekStart(startDay) {
+            state.calendar.startDayOfWeek = startDay;
+            localStorage.setItem("scholarpath_calendar_weekstart", startDay);
+            
+            if (startDay === 0) {
+                document.getElementById("toggle-sun-start").classList.add("active");
+                document.getElementById("toggle-mon-start").classList.remove("active");
+            } else {
+                document.getElementById("toggle-sun-start").classList.remove("active");
+                document.getElementById("toggle-mon-start").classList.add("active");
+            }
+            renderLargeCalendar();
+            renderMiniCalendar();
+        }
+
+        function navigateLargeCalendar(direction) {
+            state.calendar.viewMonth += direction;
+            if (state.calendar.viewMonth < 0) {
+                state.calendar.viewMonth = 11;
+                state.calendar.viewYear -= 1;
+            } else if (state.calendar.viewMonth > 11) {
+                state.calendar.viewMonth = 0;
+                state.calendar.viewYear += 1;
+            }
+            renderLargeCalendar();
+        }
+
+        // Modal Form Controllers (Add/Edit)
+        function openScholarshipModal(mode, id = null, defaultDate = null) {
+            const modal = document.getElementById("scholarship-modal");
+            const titleText = document.getElementById("modal-title-text");
+            const icon = document.getElementById("modal-icon");
+            const form = document.getElementById("scholarship-form");
+
+            form.reset();
+            document.getElementById("form-scholarship-id").value = "";
+
+            if (mode === "add") {
+                titleText.textContent = "Add Scholarship";
+                icon.textContent = "add_circle";
+                document.getElementById("form-priority").value = "Medium";
+                
+                if (defaultDate) {
+                    document.getElementById("form-deadline").value = defaultDate;
+                } else {
+                    const today = new Date();
+                    document.getElementById("form-deadline").value = today.toISOString().split('T')[0];
+                }
+            } else if (mode === "edit" && id) {
+                titleText.textContent = "Edit Scholarship";
+                icon.textContent = "edit";
+                
+                const s = state.scholarships.find(item => item.id === id);
+                if (s) {
+                    document.getElementById("form-scholarship-id").value = s.id;
+                    document.getElementById("form-name").value = s.name;
+                    document.getElementById("form-amount").value = s.amount;
+                    document.getElementById("form-type").value = s.type;
+                    document.getElementById("form-deadline").value = s.deadline || "";
+                    document.getElementById("form-status").value = s.status;
+                    document.getElementById("form-priority").value = s.priority || (s.amount >= 30000 ? "High" : (s.amount >= 15000 ? "Medium" : "Low"));
+                    document.getElementById("form-website").value = s.website || "";
+                    document.getElementById("form-eligibility").value = s.eligibility || "";
+                    document.getElementById("form-result-date").value = s.resultDate || "";
+                    document.getElementById("form-decision").value = s.decision || "Pending";
+                    document.getElementById("form-notes").value = s.notes || "";
+                }
+            }
+
+            modal.classList.add("active");
+        }
+
+        function closeScholarshipModal() {
+            document.getElementById("scholarship-modal").classList.remove("active");
+        }
+
+        // SAFE DATA MUTATION: Add/Edit
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const id = document.getElementById("form-scholarship-id").value;
+            const name = document.getElementById("form-name").value.trim();
+            const amount = Number(document.getElementById("form-amount").value);
+            const type = document.getElementById("form-type").value;
+            const deadline = document.getElementById("form-deadline").value;
+            const status = document.getElementById("form-status").value;
+            const priority = document.getElementById("form-priority").value;
+            const website = document.getElementById("form-website").value.trim();
+            const eligibility = document.getElementById("form-eligibility").value.trim();
+            const resultDate = document.getElementById("form-result-date").value;
+            const decision = document.getElementById("form-decision").value;
+            const notes = document.getElementById("form-notes").value.trim();
+
+            if (!name || amount < 0 || !deadline) {
+                showToast("Please fill in all required inputs.", true);
+                return;
+            }
+
+            const scholarshipData = {
+                name, amount, type, deadline, status, priority, website, eligibility, resultDate, decision, notes
+            };
+
+            if (id) {
+                // Update specific record in global databaseArray
+                databaseArray = databaseArray.map(record =>
+                    record.id === id
+                    ? {
+                        ...record,
+                        updatedAt: Date.now(),
+                        data: scholarshipData
+                    }
+                    : record
+                );
+                showToast("Scholarship updated successfully");
+            } else {
+                // Insert new envelope wrapped record
+                const newRecord = {
+                    id: "rec_" + Date.now().toString(36) + "_" + Math.floor(Math.random() * 1000),
+                    table: "scholarships",
+                    updatedAt: Date.now(),
+                    deleted: false,
+                    data: scholarshipData
+                };
+                databaseArray.push(newRecord);
+                showToast("Scholarship created successfully");
+            }
+
+            localStorage.removeItem("scholarpath_cleared");
+            updateDataState(databaseArray, true);
+            pullAndMergeCloudData();
+            
+            closeScholarshipModal();
+        }
+
+        // SAFE DATA MUTATION: Delete (Soft delete only)
+        function deleteScholarshipRecord(id) {
+            if (confirm("Are you sure you want to delete this scholarship? This action cannot be undone.")) {
+                databaseArray = databaseArray.map(record =>
+                    record.id === id ? { ...record, deleted: true, updatedAt: Date.now() } : record
+                );
+                updateDataState(databaseArray, true);
+                pullAndMergeCloudData();
+                showToast("Scholarship deleted successfully");
+            }
+        }
+
+        // Setup Page Preferences & Sync Handlers
+        function populateSetupPreferences() {
+            document.getElementById("user-name-input").value = state.profile.name;
+            document.getElementById("currency-input").value = state.profile.currency;
+            document.getElementById("funding-goal-input").value = state.profile.fundingGoal;
+            document.getElementById("goal-currency-symbol").textContent = state.profile.currency;
+
+            const tagContainer = document.getElementById("setup-tags-container");
+            tagContainer.innerHTML = "";
+
+            state.types.forEach(type => {
+                const tag = document.createElement("div");
+                tag.className = "setup-tag";
+                tag.innerHTML = `
+                    <span>${escapeHTML(type)}</span>
+                    <button onclick="removeType('${escapeHTML(type)}')">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+                    </button>
+                `;
+                tagContainer.appendChild(tag);
+            });
+        }
+
+        function populateFormOptions() {
+            const select = document.getElementById("form-type");
+            select.innerHTML = "";
+            state.types.forEach(t => {
+                const opt = document.createElement("option");
+                opt.value = t;
+                opt.textContent = t;
+                select.appendChild(opt);
+            });
+        }
+
+        // SAFE DATA MUTATION: Profile update
+        let autoSaveTimer;
+        function handleProfileUpdate() {
+            clearTimeout(autoSaveTimer);
+
+            const name = document.getElementById("user-name-input").value.trim() || "Alex Chen";
+            const currency = document.getElementById("currency-input").value.trim() || "$";
+            const goal = Number(document.getElementById("funding-goal-input").value) || 0;
+
+            document.getElementById("goal-currency-symbol").textContent = currency;
+
+            state.profile.name = name;
+            state.profile.currency = currency;
+            state.profile.fundingGoal = goal;
+
+            autoSaveTimer = setTimeout(() => {
+                databaseArray = databaseArray.map(record =>
+                    record.table === 'profile' && record.id === 'profile_0'
+                    ? {
+                        ...record,
+                        updatedAt: Date.now(),
+                        data: { name, currency, fundingGoal: goal }
+                    }
+                    : record
+                );
+                
+                updateDataState(databaseArray, true);
+                pullAndMergeCloudData();
+                showToast("Preferences auto-saved");
+            }, 800);
+        }
+
+        // SAFE DATA MUTATION: Add Category Type
+        function addNewType() {
+            const input = document.getElementById("new-tag-input");
+            const newType = input.value.trim();
+
+            if (!newType) return;
+            if (state.types.includes(newType)) {
+                showToast("This category type already exists.", true);
+                return;
+            }
+
+            const newRecord = {
+                id: "rec_" + Date.now().toString(36) + "_" + Math.floor(Math.random() * 1000),
+                table: "types",
+                updatedAt: Date.now(),
+                deleted: false,
+                data: { name: newType }
+            };
+            
+            databaseArray.push(newRecord);
+            updateDataState(databaseArray, true);
+            pullAndMergeCloudData();
+            
+            input.value = "";
+            showToast("Category type added");
+        }
+
+        // SAFE DATA MUTATION: Remove Category Type (with cascading re-route)
+        function removeType(type) {
+            if (state.types.length <= 1) {
+                showToast("You must maintain at least one classification type.", true);
+                return;
+            }
+
+            if (confirm(`Remove the "${type}" category tag? Any scholarship set to this category will default to the remaining tags.`)) {
+                const remainingTypes = state.types.filter(t => t !== type);
+                const defaultFallbackType = remainingTypes[0];
+
+                databaseArray = databaseArray.map(record =>
+                    record.table === 'types' && record.data.name === type
+                    ? { ...record, deleted: true, updatedAt: Date.now() }
+                    : record
+                );
+
+                databaseArray = databaseArray.map(record =>
+                    record.table === 'scholarships' && record.data.type === type
+                    ? {
+                        ...record,
+                        updatedAt: Date.now(),
+                        data: { ...record.data, type: defaultFallbackType }
+                    }
+                    : record
+                );
+
+                updateDataState(databaseArray, true);
+                pullAndMergeCloudData();
+                showToast("Category tag removed");
+            }
+        }
+
+        // Helper Utilities
+        function formatCurrency(num) {
+            return state.profile.currency + Number(num).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        function formatFriendlyDate(dateStr) {
+            if (!dateStr) return '<span style="color: var(--outline-variant); font-style: italic;">No date</span>';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                const date = new Date(parts[0], parts[1] - 1, parts[2]);
+                if (!isNaN(date.getTime())) {
+                    return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+                }
+            }
+            const dateObj = new Date(dateStr);
+            if (!isNaN(dateObj.getTime())) {
+                return dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+            }
+            return '<span style="color: var(--outline-variant); font-style: italic;">Invalid date</span>';
+        }
+    </script>
+</body>
+</html>
