@@ -2147,7 +2147,7 @@
                     <span class="material-symbols-outlined">person</span>
                 </div>
                 <div class="profile-details">
-                    <p class="name" id="display-user-name">Alex Chen</p>
+                    <p class="name" id="display-user-name">Your Name</p>
                     <p class="role">Student</p>
                 </div>
             </div>
@@ -2173,12 +2173,6 @@
             </div>
 
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <div id="syncStatusIndicator" class="sync-status" style="display: none;"></div>
-                <button id="authBtn" class="btn-primary" onclick="handleAuthClick()">Connect Drive</button>
-                <button class="icon-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle color mode"
-                    style="width: 40px; height: 40px; border-radius: var(--radius-md); border: 1px solid var(--slate-border); background: var(--surface-container-lowest); display: flex; align-items: center; justify-content: center;">
-                    <span class="material-symbols-outlined" style="font-size: 20px;">dark_mode</span>
-                </button>
                 <button class="add-btn" onclick="openScholarshipModal('add')">
                     <span class="material-symbols-outlined">add</span>
                     Add Scholarship
@@ -2390,7 +2384,7 @@
                         <div class="form-group">
                             <label for="user-name-input">Profile Name</label>
                             <input class="form-input" id="user-name-input" oninput="handleProfileUpdate()"
-                                placeholder="e.g. Alex Chen" type="text">
+                                placeholder="e.g. Your Name" type="text">
                         </div>
 
                         <div class="form-row">
@@ -2438,28 +2432,68 @@
                     </div>
                 </div>
 
-                <!-- Backup & Restoration Data Management Card -->
-                <div class="data-management-card">
-                    <h3>Data Management</h3>
-                    <div class="data-buttons">
-                        <button class="action-outline-btn" onclick="exportData()">
-                            <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
-                            Export Data
+                <!-- Backup Options Section -->
+                <div class="backup-options-section" style="margin-top: 32px; width: 100%; padding-bottom: 48px;">
+                    <div class="backup-options-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--slate-border); padding-bottom: 16px; margin-bottom: 24px; width: 100%;">
+                        <h2 style="font-size: 18px; font-weight: 700; color: var(--on-surface); margin: 0;">Backup Options</h2>
+                        <button class="action-outline-btn danger-btn" onclick="clearAllData()" style="width: auto; padding: 8px 16px; display: flex; align-items: center; gap: 8px; border-radius: var(--radius-md); border: 1px solid rgba(186, 26, 26, 0.2); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
+                            Clear Data
                         </button>
-
-                        <!-- Hidden input for file selection -->
-                        <input type="file" id="importFile" accept=".json" style="display: none;"
-                            onchange="importData(event)">
-
-                        <button class="action-outline-btn" onclick="triggerImport()">
-                            <span class="material-symbols-outlined" style="font-size: 18px;">upload</span>
-                            Import Data
-                        </button>
-
-                        <button class="action-outline-btn danger-btn" onclick="clearAllData()">
-                            <span class="material-symbols-outlined" style="font-size: 18px;">delete_forever</span>
-                            Clear All
-                        </button>
+                    </div>
+                    
+                    <div class="setup-grid">
+                        <!-- Manual Backup Card -->
+                        <div class="setup-card" style="display: flex; flex-direction: column;">
+                            <div class="setup-header-block">
+                                <div class="setup-icon-box manual-backup" style="background-color: #e6f7ed; color: #10b981; width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <span class="material-symbols-outlined">description</span>
+                                </div>
+                                <div class="setup-header-text">
+                                    <h2 style="font-size: 16px; font-weight: 700; color: var(--on-surface);">Manual backup</h2>
+                                    <p style="font-size: 12px; color: var(--outline);">Backup data on your device</p>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: var(--gap-md); margin-top: 12px;">
+                                <button class="action-outline-btn" onclick="exportData()" style="flex: 1; justify-content: center; display: flex; align-items: center; gap: 8px; height: 40px; border-radius: var(--radius-md);">
+                                    <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
+                                    Export data
+                                </button>
+                                <!-- Hidden input for file selection -->
+                                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+                                <button class="action-outline-btn" onclick="triggerImport()" style="flex: 1; justify-content: center; display: flex; align-items: center; gap: 8px; height: 40px; border-radius: var(--radius-md);">
+                                    <span class="material-symbols-outlined" style="font-size: 18px;">upload</span>
+                                    Import data
+                                </button>
+                            </div>
+                            
+                            <p style="font-size: 11px; color: var(--outline); font-style: italic; margin-top: auto; padding-top: 16px; line-height: 1.4; margin-bottom: 0;">
+                                No automatic sync across devices. Data is stored locally, and clearing browser cache deletes your data.
+                            </p>
+                        </div>
+                        
+                        <!-- Automatic Backup Card -->
+                        <div class="setup-card" style="display: flex; flex-direction: column;">
+                            <div class="setup-header-block">
+                                <div class="setup-icon-box automatic-backup" style="background-color: #e0f2fe; color: #0284c7; width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <span class="material-symbols-outlined">sync</span>
+                                </div>
+                                <div class="setup-header-text">
+                                    <h2 style="font-size: 16px; font-weight: 700; color: var(--on-surface);">Automatic backup</h2>
+                                    <p style="font-size: 12px; color: var(--outline);">Backup data on your Google Drive</p>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: var(--gap-md); flex-wrap: wrap; margin-top: 12px;">
+                                <button id="authBtn" class="btn-primary" onclick="handleAuthClick()" style="padding: 10px 18px; border-radius: var(--radius-md); font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s ease;">Connect Drive</button>
+                                <div id="syncStatusIndicator" class="sync-status" style="display: none;"></div>
+                            </div>
+                            
+                            <p style="font-size: 11px; color: var(--outline); font-style: italic; margin-top: auto; padding-top: 16px; line-height: 1.4; margin-bottom: 0;">
+                                Connect using the same account on other devices for automatic sync. Mobile/tablet needs to be reconnected after one hour.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2594,12 +2628,12 @@
         // UI State cache mapped from flat databaseArray
         const state = {
             profile: {
-                name: "Alex Chen",
+                name: "Your Name",
                 currency: "$",
-                fundingGoal: 145000
+                fundingGoal: 0
             },
             scholarships: [],
-            types: ["Merit-based", "Needs-based", "Diversity", "Athletic", "Other"],
+            types: [],
             filters: {
                 searchQuery: "",
                 status: "All Statuses",
@@ -2663,8 +2697,6 @@
         // Seeding databaseArray defaults deterministically
         function initDefaultsIfEmpty() {
             const profiles = databaseArray.filter(r => r.table === 'profile' && !r.deleted);
-            const types = databaseArray.filter(r => r.table === 'types' && !r.deleted);
-            const scholarships = databaseArray.filter(r => r.table === 'scholarships' && !r.deleted);
 
             let changed = false;
 
@@ -2675,83 +2707,10 @@
                     updatedAt: 0,
                     deleted: false,
                     data: {
-                        name: "Alex Chen",
+                        name: "Your Name",
                         currency: "$",
-                        fundingGoal: 145000
+                        fundingGoal: 0
                     }
-                });
-                changed = true;
-            }
-
-            if (types.length === 0) {
-                const defaultTypes = ["Merit-based", "Needs-based", "Diversity", "Athletic", "Other"];
-                defaultTypes.forEach((t, idx) => {
-                    databaseArray.push({
-                        id: "types_" + idx,
-                        table: "types",
-                        updatedAt: 0,
-                        deleted: false,
-                        data: { name: t }
-                    });
-                });
-                changed = true;
-            }
-
-            const isCleared = localStorage.getItem("scholarpath_cleared") === "true";
-            if (scholarships.length === 0 && !isCleared) {
-                const today = new Date();
-                const yyyy = today.getFullYear();
-                const mm = String(today.getMonth() + 1).padStart(2, '0');
-                const nextMm = String((today.getMonth() + 1) % 12 + 1).padStart(2, '0');
-                const nextYyyy = today.getMonth() === 11 ? yyyy + 1 : yyyy;
-
-                const defaultScholarships = [
-                    {
-                        name: "Global Tech Excellence",
-                        type: "Merit-based",
-                        amount: 25000,
-                        deadline: `${yyyy}-${mm}-15`,
-                        status: "In Progress",
-                        website: "https://google.com",
-                        eligibility: "Requires 3 letters of reference and a 500-word essay detailing future tech innovations.",
-                        resultDate: `${yyyy}-${nextMm}-01`,
-                        decision: "Pending",
-                        notes: "Highly competitive. Focus essay on AI ethics."
-                    },
-                    {
-                        name: "STEM Innovation Award",
-                        type: "Needs-based",
-                        amount: 45000,
-                        deadline: `${yyyy}-${mm}-22`,
-                        status: "Submitted",
-                        website: "https://google.com",
-                        eligibility: "Enrolled in undergraduate engineering degree. Minimum GPA of 3.8.",
-                        resultDate: `${yyyy}-${mm}-22`,
-                        decision: "Finalist",
-                        notes: "Interview went very well! Follow up in two weeks."
-                    },
-                    {
-                        name: "Diversity in Tech Fellowship",
-                        type: "Diversity",
-                        amount: 15000,
-                        deadline: `${nextYyyy}-${nextMm}-05`,
-                        status: "Not Started",
-                        website: "https://google.com",
-                        eligibility: "Underrepresented minority groups in Computer Science or STEM disciplines.",
-                        resultDate: `${nextYyyy}-${String(Number(nextMm) % 12 + 1).padStart(2, '0')}-15`,
-                        decision: "Pending",
-                        notes: "Need to start drafting statements by mid-month."
-                    }
-                ];
-
-                defaultScholarships.forEach((s, idx) => {
-                    databaseArray.push({
-                        id: "scholarships_" + idx,
-                        table: "scholarships",
-                        updatedAt: 0,
-                        deleted: false,
-                        data: s
-                    });
                 });
                 changed = true;
             }
@@ -2831,13 +2790,12 @@
         // Soft deletion of everything
         function clearAllData() {
             if (confirm("CRITICAL WARNING: This will permanently delete ALL scholarships and reset your profile settings. Are you absolutely sure?")) {
-                databaseArray = databaseArray.map(record => ({
-                    ...record,
-                    deleted: true,
-                    updatedAt: Date.now()
-                }));
-                localStorage.setItem("scholarpath_cleared", "true");
-                updateDataState(databaseArray, true);
+                const now = Date.now();
+                databaseArray = databaseArray.map(r => ({ ...r, deleted: true, updatedAt: now }));
+                localStorage.setItem('scholarpath_local_data', JSON.stringify(databaseArray));
+                localStorage.setItem('scholarpath_cleared', 'true');
+                localStorage.removeItem('scholarpath_calendar_weekstart');
+                
                 scheduleCloudSync(true);
                 showToast("All data cleared. Resetting tracker...");
                 setTimeout(() => {
@@ -3269,32 +3227,18 @@
 
         // Theme Engine
         function initTheme() {
-            const storedTheme = localStorage.getItem("scholarpath_theme") || "light";
-            setTheme(storedTheme);
+            setTheme("light");
         }
 
         function setTheme(theme) {
             const html = document.documentElement;
-            const themeBtnIcon = document.querySelector("#theme-toggle-btn span");
-
-            if (theme === "dark") {
-                html.classList.remove("light");
-                html.classList.add("dark");
-                if (themeBtnIcon) themeBtnIcon.textContent = "light_mode";
-            } else {
-                html.classList.remove("dark");
-                html.classList.add("light");
-                if (themeBtnIcon) themeBtnIcon.textContent = "dark_mode";
-            }
-
-            localStorage.setItem("scholarpath_theme", theme);
+            html.classList.remove("dark");
+            html.classList.add("light");
+            localStorage.setItem("scholarpath_theme", "light");
         }
 
         function toggleTheme() {
-            const currentTheme = localStorage.getItem("scholarpath_theme") || "light";
-            const newTheme = currentTheme === "light" ? "dark" : "light";
-            setTheme(newTheme);
-            showToast(`Switched to ${newTheme} mode`);
+            // Stubbed - App is Light Mode only
         }
 
         // Global Layouts Handlers
@@ -4012,7 +3956,7 @@
         function handleProfileUpdate() {
             clearTimeout(autoSaveTimer);
 
-            const name = document.getElementById("user-name-input").value.trim() || "Alex Chen";
+            const name = document.getElementById("user-name-input").value.trim() || "Your Name";
             const currency = document.getElementById("currency-input").value.trim() || "$";
             const goal = Number(document.getElementById("funding-goal-input").value) || 0;
 
