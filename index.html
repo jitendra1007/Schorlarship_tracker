@@ -1787,6 +1787,12 @@
             }
         }
 
+        .mobile-search-row {
+            display: none;
+            width: 100%;
+            position: relative;
+        }
+
         /* Responsive Breakpoints */
         @media (max-width: 1024px) {
             #sidebar {
@@ -1814,13 +1820,27 @@
             .search-container {
                 margin: 0 16px;
             }
-        }
 
-        @media (max-width: 768px) {
             .tab-pane {
                 height: auto !important;
             }
 
+            .tracker-aside {
+                margin-bottom: 32px;
+            }
+
+            .due-list {
+                max-height: none !important;
+                overflow-y: visible !important;
+            }
+
+            .mobile-search-row {
+                display: block;
+                margin-bottom: var(--gap-md);
+            }
+        }
+
+        @media (max-width: 768px) {
             header {
                 padding: 0 16px;
                 gap: 8px;
@@ -1829,11 +1849,6 @@
             .search-container {
                 display: none;
                 /* Hide main search bar on mobile header */
-            }
-
-            .mobile-search-row {
-                display: block;
-                margin-bottom: var(--gap-md);
             }
 
             .sync-status {
@@ -1866,12 +1881,6 @@
 
             .mini-day {
                 font-size: 10px !important;
-            }
-
-            .due-list {
-                max-height: none !important;
-                /* Remove heights so list stretches out fully */
-                overflow-y: visible !important;
             }
 
             /* Disable collapsed/minimized sidebar icons view on mobile */
@@ -1954,11 +1963,7 @@
             }
         }
 
-        .mobile-search-row {
-            display: none;
-            width: 100%;
-            position: relative;
-        }
+
 
         /* Print Style Sheet Rules */
         @media print {
@@ -2259,17 +2264,17 @@
 
         <div id="content-area">
 
-            <!-- Mobile Search Row -->
-            <div class="mobile-search-row" id="mobile-search-container">
-                <input class="search-input" id="mobileSearchBar" oninput="handleSearch(this.value)"
-                    placeholder="Search scholarships..." type="text" style="padding-left: 44px;">
-                <span class="material-symbols-outlined search-icon"
-                    style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--on-surface-variant);">search</span>
-            </div>
-
             <!-- Tab 1: Tracker -->
             <div class="tab-pane active-pane" id="tab-tracker">
                 <div class="tracker-main">
+
+                    <!-- Mobile Search Row -->
+                    <div class="mobile-search-row" id="mobile-search-container">
+                        <input class="search-input" id="mobileSearchBar" oninput="handleSearch(this.value)"
+                            placeholder="Search scholarships..." type="text" style="padding-left: 44px;">
+                        <span class="material-symbols-outlined search-icon"
+                            style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--on-surface-variant);">search</span>
+                    </div>
 
                     <!-- Metrics Summary Grid -->
                     <div class="metrics-row">
