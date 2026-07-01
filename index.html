@@ -2082,7 +2082,7 @@
             font-weight: 700;
             padding: 6px 12px;
             border-radius: var(--radius-full);
-            display: inline-flex;
+            display: none !important;
             align-items: center;
             gap: 6px;
             background-color: var(--surface-container-low);
@@ -2404,9 +2404,9 @@
                     <div class="calendar-header-left">
                         <h2 id="calendar-month-title">October 2026</h2>
                         <div class="week-start-toggle">
-                            <button class="toggle-tab-btn active" id="toggle-sun-start"
+                            <button class="toggle-tab-btn" id="toggle-sun-start"
                                 onclick="setCalendarWeekStart(0)">Sun Start</button>
-                            <button class="toggle-tab-btn" id="toggle-mon-start" onclick="setCalendarWeekStart(1)">Mon
+                            <button class="toggle-tab-btn active" id="toggle-mon-start" onclick="setCalendarWeekStart(1)">Mon
                                 Start</button>
                         </div>
                     </div>
@@ -2509,7 +2509,7 @@
                             </div>
                             <div style="display: flex; gap: 8px; margin-top: 12px;">
                                 <input class="form-input" id="new-tag-input" placeholder="New Type..." type="text"
-                                    style="padding: 6px 12px; font-size: 12px;">
+                                    style="padding: 6px 12px; font-size: 12px;" onkeydown="if(event.key === 'Enter') addNewType()">
                                 <button class="add-btn" onclick="addNewType()"
                                     style="padding: 6px 16px; font-size: 12px; border-radius: var(--radius-md);">Add</button>
                             </div>
@@ -2559,7 +2559,7 @@
                         </div>
                         
                         <!-- Automatic Backup Card -->
-                        <div class="setup-card" style="display: flex; flex-direction: column;">
+                        <div class="setup-card" style="display: none !important; flex-direction: column;">
                             <div class="setup-header-block">
                                 <div class="setup-icon-box automatic-backup" style="background-color: #e0f2fe; color: #0284c7; width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                     <span class="material-symbols-outlined">sync</span>
@@ -2727,7 +2727,7 @@
             calendar: {
                 viewYear: 0,
                 viewMonth: 0,
-                startDayOfWeek: 0 // 0 = Sunday, 1 = Monday
+                startDayOfWeek: 1 // 0 = Sunday, 1 = Monday
             },
             miniCalendar: {
                 viewYear: 0,
@@ -2793,7 +2793,8 @@
                     data: {
                         name: "Your Name",
                         currency: "$",
-                        fundingGoal: 0
+                        fundingGoal: 0,
+                        startDayOfWeek: 1
                     }
                 });
                 changed = true;
@@ -2809,6 +2810,25 @@
             const profileRecord = databaseArray.find(r => r.table === 'profile' && !r.deleted);
             if (profileRecord) {
                 state.profile = profileRecord.data;
+                if (typeof profileRecord.data.startDayOfWeek !== 'undefined') {
+                    state.calendar.startDayOfWeek = profileRecord.data.startDayOfWeek;
+                } else {
+                    const storedWeekStart = localStorage.getItem("scholarpath_calendar_weekstart");
+                    state.calendar.startDayOfWeek = storedWeekStart !== null ? parseInt(storedWeekStart, 10) : 1;
+                }
+            }
+
+            // Sync weekstart toggle buttons' active classes to match state.calendar.startDayOfWeek
+            const sunBtn = document.getElementById("toggle-sun-start");
+            const monBtn = document.getElementById("toggle-mon-start");
+            if (sunBtn && monBtn) {
+                if (state.calendar.startDayOfWeek === 0) {
+                    sunBtn.classList.add("active");
+                    monBtn.classList.remove("active");
+                } else {
+                    sunBtn.classList.remove("active");
+                    monBtn.classList.add("active");
+                }
             }
 
             const typeRecords = databaseArray.filter(r => r.table === 'types' && !r.deleted);
@@ -3294,6 +3314,19 @@
                 state.calendar.startDayOfWeek = parseInt(storedWeekStart, 10);
             }
 
+            // Sync button classes with the startDayOfWeek state
+            const sunBtn = document.getElementById("toggle-sun-start");
+            const monBtn = document.getElementById("toggle-mon-start");
+            if (sunBtn && monBtn) {
+                if (state.calendar.startDayOfWeek === 0) {
+                    sunBtn.classList.add("active");
+                    monBtn.classList.remove("active");
+                } else {
+                    sunBtn.classList.remove("active");
+                    monBtn.classList.add("active");
+                }
+            }
+
             const today = new Date();
             // Sync current views centered around current month
             state.calendar.viewYear = today.getFullYear();
@@ -3427,6 +3460,10 @@
 
             const upcomingCount = state.scholarships.filter(s => {
                 if (!s.deadline) return false;
+                const statusLower = (s.status || "").toLowerCase();
+                if (statusLower === "submitted" || statusLower === "awarded" || statusLower === "rejected") {
+                    return false;
+                }
                 const deadlineDate = new Date(s.deadline);
                 return deadlineDate >= today && deadlineDate <= thirtyDaysLater;
             }).length;
@@ -3724,10 +3761,16 @@
                 let priorityVal = `${explicitPriority} Priority`;
                 let badgeClass = `badge-priority-${explicitPriority.toLowerCase()}`;
 
+                let statusClass = "status-notstarted";
+                if (s.status === "In Progress") statusClass = "status-inprogress";
+                else if (s.status === "Submitted") statusClass = "status-submitted";
+                else if (s.status === "Awarded") statusClass = "status-awarded";
+                else if (s.status === "Rejected") statusClass = "status-rejected";
+
                 item.innerHTML = `
                     <div class="due-item-header">
                         <span class="badge ${badgeClass}">${priorityVal}</span>
-                        <span class="badge-status ${s.status === "Submitted" ? 'status-submitted' : (s.status === "In Progress" ? 'status-inprogress' : 'status-notstarted')}" style="font-size: 9px; padding: 4px 10px; font-weight: 800; border-radius: var(--radius-full);">${s.status}</span>
+                        <span class="badge-status ${statusClass}" style="font-size: 9px; padding: 4px 10px; font-weight: 800; border-radius: var(--radius-full);">${s.status}</span>
                     </div>
                     <p class="due-item-title">${escapeHTML(s.name)}</p>
                     <p style="font-size: 9px; font-weight: bold; margin-top: 4px; display: flex; align-items: center; gap: 4px; color: ${isDeadline ? 'var(--warning)' : 'var(--success)'};">
@@ -3873,6 +3916,18 @@
         function setCalendarWeekStart(startDay) {
             state.calendar.startDayOfWeek = startDay;
             localStorage.setItem("scholarpath_calendar_weekstart", startDay);
+
+            databaseArray = databaseArray.map(record =>
+                record.table === 'profile' && record.id === 'profile_0'
+                    ? {
+                        ...record,
+                        updatedAt: Date.now(),
+                        data: { ...record.data, startDayOfWeek: startDay }
+                    }
+                    : record
+            );
+            updateDataState(databaseArray, true);
+            scheduleCloudSync();
 
             if (startDay === 0) {
                 document.getElementById("toggle-sun-start").classList.add("active");
@@ -4071,7 +4126,7 @@
                         ? {
                             ...record,
                             updatedAt: Date.now(),
-                            data: { name, currency, fundingGoal: goal }
+                            data: { ...record.data, name, currency, fundingGoal: goal }
                         }
                         : record
                 );
@@ -4116,7 +4171,7 @@
                 return;
             }
 
-            if (confirm(`Remove the "${type}" category tag? Any scholarship set to this category will default to the remaining tags.`)) {
+            if (confirm(`Remove the "${type}" category tag?`)) {
                 const remainingTypes = state.types.filter(t => t !== type);
                 const defaultFallbackType = remainingTypes[0];
 
