@@ -1352,6 +1352,27 @@
             color: var(--success);
         }
 
+        .calendar-event-more {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 6px;
+            border-radius: var(--radius-sm);
+            font-size: 9px;
+            font-weight: 800;
+            cursor: pointer;
+            background-color: var(--primary-fixed);
+            border: 1px solid var(--primary-fixed-dim);
+            color: var(--primary);
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .calendar-event-more:hover {
+            background-color: var(--primary-container);
+            color: var(--on-primary);
+        }
+
         .calendar-event span {
             font-size: 12px;
         }
@@ -2589,6 +2610,24 @@
 
         </div>
     </main>
+
+    <!-- Dynamic Modal: View All Calendar Day Events -->
+    <div class="modal-overlay" id="calendar-more-modal" onclick="closeCalendarMoreModal(event)">
+        <div class="modal-container" style="max-width: 480px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>
+                    <span class="material-symbols-outlined">calendar_today</span>
+                    <span id="calendar-more-modal-title">Events</span>
+                </h2>
+                <button class="close-modal-btn" onclick="closeCalendarMoreModal()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="modal-body" id="calendar-more-events-list" style="display: flex; flex-direction: column; gap: 12px; padding: 20px; max-height: 400px; overflow-y: auto;">
+                <!-- Populated dynamically by JS -->
+            </div>
+        </div>
+    </div>
 
     <!-- Dynamic Modal: Add/Edit Scholarship Form -->
     <div class="modal-overlay" id="scholarship-modal">
@@ -3855,7 +3894,7 @@
                 `;
 
                 cell.onclick = (e) => {
-                    if (e.target.closest(".calendar-event")) return;
+                    if (e.target.closest(".calendar-event") || e.target.closest(".calendar-event-more")) return;
                     const selectedDateStr = `${yr}-${String(mo + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     openScholarshipModal("add", null, selectedDateStr);
                 };
@@ -3863,37 +3902,49 @@
                 const eventContainer = cell.querySelector(".calendar-events-container");
                 const currentStr = `${yr}-${String(mo + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
+                // Gather all events for this day
+                const dayEvents = [];
                 state.scholarships.forEach(s => {
                     if (s.deadline === currentStr) {
-                        const eventTag = document.createElement("div");
-                        eventTag.className = "calendar-event event-deadline";
-                        eventTag.title = `Deadline: ${s.name}`;
-                        eventTag.onclick = (e) => {
-                            e.stopPropagation();
-                            openScholarshipModal("edit", s.id);
-                        };
-                        eventTag.innerHTML = `
-                            <span class="material-symbols-outlined">timer</span>
-                            <span>${escapeHTML(s.name)}</span>
-                        `;
-                        eventContainer.appendChild(eventTag);
+                        dayEvents.push({ scholarship: s, type: "deadline" });
                     }
-
                     if (s.resultDate === currentStr) {
-                        const eventTag = document.createElement("div");
-                        eventTag.className = "calendar-event event-result";
-                        eventTag.title = `Results: ${s.name}`;
-                        eventTag.onclick = (e) => {
-                            e.stopPropagation();
-                            openScholarshipModal("edit", s.id);
-                        };
-                        eventTag.innerHTML = `
-                            <span class="material-symbols-outlined">celebration</span>
-                            <span>${escapeHTML(s.name)}</span>
-                        `;
-                        eventContainer.appendChild(eventTag);
+                        dayEvents.push({ scholarship: s, type: "result" });
                     }
                 });
+
+                const totalEvents = dayEvents.length;
+                const showMore = totalEvents > 3;
+                const visibleEvents = showMore ? dayEvents.slice(0, 2) : dayEvents.slice(0, 3);
+
+                visibleEvents.forEach(ev => {
+                    const s = ev.scholarship;
+                    const isDeadline = ev.type === "deadline";
+                    const eventTag = document.createElement("div");
+                    eventTag.className = `calendar-event ${isDeadline ? 'event-deadline' : 'event-result'}`;
+                    eventTag.title = `${isDeadline ? 'Deadline' : 'Results'}: ${s.name}`;
+                    eventTag.onclick = (e) => {
+                        e.stopPropagation();
+                        openScholarshipModal("edit", s.id);
+                    };
+                    eventTag.innerHTML = `
+                        <span class="material-symbols-outlined">${isDeadline ? 'timer' : 'celebration'}</span>
+                        <span>${escapeHTML(s.name)}</span>
+                    `;
+                    eventContainer.appendChild(eventTag);
+                });
+
+                if (showMore) {
+                    const moreTag = document.createElement("div");
+                    moreTag.className = "calendar-event-more";
+                    moreTag.textContent = `+${totalEvents - 2} more`;
+                    moreTag.title = "View all events";
+                    moreTag.onclick = (e) => {
+                        e.stopPropagation();
+                        openCalendarMoreModal(currentStr);
+                    };
+                    eventContainer.appendChild(moreTag);
+                }
 
                 grid.appendChild(cell);
             }
@@ -4221,6 +4272,77 @@
                 return dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
             }
             return '<span style="color: var(--outline-variant); font-style: italic;">Invalid date</span>';
+        }
+
+        // Calendar More Modal Actions
+        function openCalendarMoreModal(dateStr) {
+            const modal = document.getElementById("calendar-more-modal");
+            const titleEl = document.getElementById("calendar-more-modal-title");
+            const listEl = document.getElementById("calendar-more-events-list");
+
+            // Format date for title
+            const parts = dateStr.split('-');
+            const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+            const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            titleEl.textContent = `Deadlines & Results: ${formattedDate}`;
+
+            // Clear previous items
+            listEl.innerHTML = "";
+
+            // Gather all events for this day
+            const events = [];
+            state.scholarships.forEach(s => {
+                if (s.deadline === dateStr) {
+                    events.push({ scholarship: s, type: "deadline" });
+                }
+                if (s.resultDate === dateStr) {
+                    events.push({ scholarship: s, type: "result" });
+                }
+            });
+
+            // Populate the list (using same layout styling as updateDailyDeadlinesPanel)
+            events.forEach(ev => {
+                const s = ev.scholarship;
+                const isDeadline = ev.type === "deadline";
+                const item = document.createElement("div");
+                item.className = "due-item";
+                item.style.cursor = "pointer";
+                item.onclick = () => {
+                    openScholarshipModal("edit", s.id);
+                    closeCalendarMoreModal();
+                };
+
+                let explicitPriority = s.priority || (s.amount >= 30000 ? "High" : (s.amount >= 15000 ? "Medium" : "Low"));
+                let priorityVal = `${explicitPriority} Priority`;
+                let badgeClass = `badge-priority-${explicitPriority.toLowerCase()}`;
+
+                let statusClass = "status-notstarted";
+                if (s.status === "In Progress") statusClass = "status-inprogress";
+                else if (s.status === "Submitted") statusClass = "status-submitted";
+                else if (s.status === "Awarded") statusClass = "status-awarded";
+                else if (s.status === "Rejected") statusClass = "status-rejected";
+
+                item.innerHTML = `
+                    <div class="due-item-header">
+                        <span class="badge ${badgeClass}">${priorityVal}</span>
+                        <span class="badge-status ${statusClass}" style="font-size: 9px; padding: 4px 10px; font-weight: 800; border-radius: var(--radius-full);">${s.status}</span>
+                    </div>
+                    <p class="due-item-title">${escapeHTML(s.name)}</p>
+                    <p style="font-size: 9px; font-weight: bold; margin-top: 4px; display: flex; align-items: center; gap: 4px; color: ${isDeadline ? 'var(--warning)' : 'var(--success)'};">
+                        <span class="material-symbols-outlined" style="font-size: 11px;">${isDeadline ? 'timer' : 'celebration'}</span>
+                        ${isDeadline ? 'DEADLINE DUE' : 'RELEASE RESULTS'}
+                    </p>
+                `;
+                listEl.appendChild(item);
+            });
+
+            modal.classList.add("active");
+        }
+
+        function closeCalendarMoreModal(e) {
+            if (e && e.target !== document.getElementById("calendar-more-modal")) return;
+            const modal = document.getElementById("calendar-more-modal");
+            modal.classList.remove("active");
         }
     </script>
 </body>
