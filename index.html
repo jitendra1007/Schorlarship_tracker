@@ -127,6 +127,7 @@
             background-color: var(--slate-surface);
             color: var(--on-surface);
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             overflow: hidden;
             font-size: 14px;
@@ -369,6 +370,7 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            height: 100dvh;
             overflow: hidden;
         }
 
@@ -527,21 +529,17 @@
         }
 
         .metric-card {
-            border-left: 4px solid var(--primary);
         }
 
         .metric-card.info-blue {
-            border-left-color: var(--info);
             background-color: rgba(59, 130, 246, 0.03);
         }
 
         .metric-card.success-emerald {
-            border-left-color: var(--success);
             background-color: rgba(16, 185, 129, 0.03);
         }
 
         .metric-card.warning-amber {
-            border-left-color: var(--warning);
             background-color: rgba(245, 158, 10, 0.03);
         }
 
@@ -711,7 +709,7 @@
 
         .bento-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             gap: var(--gap-lg);
         }
 
@@ -830,7 +828,19 @@
             overflow: hidden;
             text-overflow: ellipsis;
             line-height: 1.5;
-            height: 36px;
+        }
+
+        .card-notes {
+            font-size: 12px;
+            color: var(--on-surface-variant);
+            font-weight: 400;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.5;
+            margin-top: 6px;
         }
 
         .card-footer {
@@ -1081,7 +1091,6 @@
             padding: 16px;
             background-color: var(--surface-container-low);
             border: 1px solid var(--slate-border);
-            border-left: 4px solid var(--primary);
             border-radius: var(--radius-md);
             cursor: pointer;
             transition: all 0.2s;
@@ -1844,6 +1853,10 @@
 
             .tab-pane {
                 height: auto !important;
+            }
+
+            #content-area {
+                padding-bottom: 80px;
             }
 
             .tracker-aside {
@@ -2780,6 +2793,26 @@
             }
         };
 
+        function adjustTrackerLayout() {
+            const trackerMain = document.querySelector('.tracker-main');
+            const trackerAside = document.querySelector('.tracker-aside');
+            const progressCard = document.querySelector('.progress-card');
+            const tabTracker = document.getElementById('tab-tracker');
+
+            if (!trackerMain || !trackerAside || !progressCard || !tabTracker) return;
+
+            if (window.innerWidth <= 1024) {
+                if (trackerAside.parentElement !== trackerMain) {
+                    progressCard.after(trackerAside);
+                }
+            } else {
+                if (trackerAside.parentElement !== tabTracker) {
+                    tabTracker.appendChild(trackerAside);
+                }
+            }
+        }
+        window.addEventListener('resize', adjustTrackerLayout);
+
         document.addEventListener('DOMContentLoaded', () => {
             // INSTANT UI PRE-LOADER: Flip the button state before Google scripts load
             if (localStorage.getItem('scholarpath_has_linked_google') === 'true') {
@@ -2800,6 +2833,7 @@
             if (storedData) {
                 try { databaseArray = JSON.parse(storedData); } catch (e) { databaseArray = []; }
             }
+            adjustTrackerLayout();
             render();
         });
 
@@ -3634,6 +3668,10 @@
                         <p class="card-eligibility" title="${escapeHTML(s.eligibility || 'No criteria specified')}">
                             ${escapeHTML(s.eligibility) || '<span style="color: var(--outline-variant); font-style: italic;">No eligibility criteria specified.</span>'}
                         </p>
+                        <p class="card-notes" title="${escapeHTML(s.notes || 'No notes')}">
+                            <strong style="color: var(--on-surface);">Notes:</strong> 
+                            ${escapeHTML(s.notes) || '<span style="color: var(--outline-variant); font-style: italic;">No notes.</span>'}
+                        </p>
                     </div>
 
                     <div class="card-footer">
@@ -3819,7 +3857,7 @@
                     <p class="due-item-title">${escapeHTML(s.name)}</p>
                     <p style="font-size: 9px; font-weight: bold; margin-top: 4px; display: flex; align-items: center; gap: 4px; color: ${isDeadline ? 'var(--warning)' : 'var(--success)'};">
                         <span class="material-symbols-outlined" style="font-size: 11px;">${isDeadline ? 'timer' : 'celebration'}</span>
-                        ${isDeadline ? 'DEADLINE DUE' : 'RELEASE RESULTS'}
+                        ${isDeadline ? 'DEADLINE' : 'RESULT DATE'}
                     </p>
                 `;
                 list.appendChild(item);
@@ -4330,7 +4368,7 @@
                     <p class="due-item-title">${escapeHTML(s.name)}</p>
                     <p style="font-size: 9px; font-weight: bold; margin-top: 4px; display: flex; align-items: center; gap: 4px; color: ${isDeadline ? 'var(--warning)' : 'var(--success)'};">
                         <span class="material-symbols-outlined" style="font-size: 11px;">${isDeadline ? 'timer' : 'celebration'}</span>
-                        ${isDeadline ? 'DEADLINE DUE' : 'RELEASE RESULTS'}
+                        ${isDeadline ? 'DEADLINE' : 'RESULT DATE'}
                     </p>
                 `;
                 listEl.appendChild(item);
