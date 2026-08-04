@@ -500,10 +500,17 @@
         }
 
         .tracker-main {
+            order: 1;
             flex: 1;
             display: flex;
             flex-direction: column;
             gap: var(--gap-lg);
+        }
+
+        @media (min-width: 1025px) {
+            .tracker-main {
+                order: 2;
+            }
         }
 
         /* Bento Grid & Cards */
@@ -923,6 +930,7 @@
 
         /* Tracker Right Column Calendar Panel */
         .tracker-aside {
+            order: -1;
             width: 100%;
             background-color: var(--surface-container-lowest);
             border: 1px solid var(--slate-border);
@@ -935,6 +943,7 @@
 
         @media (min-width: 1025px) {
             .tracker-aside {
+                order: 1;
                 width: 320px;
                 flex-shrink: 0;
             }
@@ -2300,6 +2309,44 @@
 
             <!-- Tab 1: Tracker -->
             <div class="tab-pane active-pane" id="tab-tracker">
+                <!-- Left Column: Sidebar Mini Calendar and upcoming list -->
+                <aside class="tracker-aside">
+
+                    <!-- Sidebar Mini Calendar -->
+                    <div>
+                        <div class="panel-header">
+                            <h3 id="mini-cal-month-title">October 2026</h3>
+                            <div class="calendar-nav-arrows">
+                                <button class="mini-arrow-btn" onclick="navigateMiniCalendar(-1)">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span>
+                                </button>
+                                <button class="mini-arrow-btn" onclick="navigateMiniCalendar(1)">
+                                    <span class="material-symbols-outlined"
+                                        style="font-size: 16px;">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mini-cal-weekdays" id="mini-cal-weekdays">
+                            <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                        </div>
+                        <div class="mini-cal-grid" id="mini-calendar-grid">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Upcoming / selected day deadlines -->
+                    <div class="due-section">
+                        <div class="due-header">
+                            <span id="deadlines-header">Select Date</span>
+                            <span class="due-count-badge" id="daily-deadline-count">0</span>
+                        </div>
+                        <div class="due-list" id="daily-results-list">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </div>
+                </aside>
+
                 <div class="tracker-main">
 
                     <!-- Mobile Search Row -->
@@ -2397,44 +2444,6 @@
                         <!-- Cards are dynamically rendered by JS -->
                     </div>
                 </div>
-
-                <!-- Right Column: Sidebar Mini Calendar and upcoming list -->
-                <aside class="tracker-aside">
-
-                    <!-- Sidebar Mini Calendar -->
-                    <div>
-                        <div class="panel-header">
-                            <h3 id="mini-cal-month-title">October 2026</h3>
-                            <div class="calendar-nav-arrows">
-                                <button class="mini-arrow-btn" onclick="navigateMiniCalendar(-1)">
-                                    <span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span>
-                                </button>
-                                <button class="mini-arrow-btn" onclick="navigateMiniCalendar(1)">
-                                    <span class="material-symbols-outlined"
-                                        style="font-size: 16px;">chevron_right</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="mini-cal-weekdays" id="mini-cal-weekdays">
-                            <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
-                        </div>
-                        <div class="mini-cal-grid" id="mini-calendar-grid">
-                            <!-- Populated dynamically by JS -->
-                        </div>
-                    </div>
-
-                    <!-- Upcoming / selected day deadlines -->
-                    <div class="due-section">
-                        <div class="due-header">
-                            <span id="deadlines-header">Select Date</span>
-                            <span class="due-count-badge" id="daily-deadline-count">0</span>
-                        </div>
-                        <div class="due-list" id="daily-results-list">
-                            <!-- Populated dynamically by JS -->
-                        </div>
-                    </div>
-                </aside>
             </div>
 
             <!-- Tab 2: Calendar Page -->
